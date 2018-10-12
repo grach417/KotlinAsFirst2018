@@ -25,9 +25,9 @@ fun isNumberHappy(number: Int): Boolean {
     val n2 = number / 100 % 10
     val n3 = number / 10 % 10
     val n4 = number % 10
-    if (n1 + n2 == n3 + n4){
-        return true
-    } else return false
+   return if (n1 + n2 == n3 + n4){
+        true
+    } else false
 }
 
 /**
@@ -40,10 +40,7 @@ fun isNumberHappy(number: Int): Boolean {
 fun queenThreatens(x1: Int, y1: Int, x2: Int, y2: Int): Boolean {
     val d1 = kotlin.math.sqrt((sqr(x1) + sqr(y1)).toDouble())
     val d2 = kotlin.math.sqrt((sqr(x2) + sqr(y2)).toDouble())
-    if ((x1 == x2) || (y1 == y2) || (d1 == d2)){
-        return true
-    } else return false
-
+    if ((x1 == x2) || (y1 == y2) || (d1 == d2)) return true else return false
 }
 
 /**
@@ -52,20 +49,9 @@ fun queenThreatens(x1: Int, y1: Int, x2: Int, y2: Int): Boolean {
  * Дан номер месяца (от 1 до 12 включительно) и год (положительный).
  * Вернуть число дней в этом месяце этого года по григорианскому календарю.
  */
-fun daysInMonth(month: Int, year: Int): Int {
-    if (month == 2) {
-        if (year % 100 == 0 && year % 400 != 0 || (year % 4 != 0))
-            return 28
-        else return 29
-    }
-    else {
-        if (month <= 7 && month % 2 == 1 || month > 7 && month % 2 == 0)
-            return 31
-        else return 30
-    }
-}
-
-
+fun daysInMonth(month: Int, year: Int): Int = if (month == 2)
+    if (year % 100 == 0 && year % 400 != 0 || (year % 4 != 0)) 28 else 29
+    else if (month <= 7 && month % 2 == 1 || month > 7 && month % 2 == 0) 31 else 30
 
 /**
  * Средняя
@@ -77,7 +63,7 @@ fun daysInMonth(month: Int, year: Int): Int {
 fun circleInside(x1: Double, y1: Double, r1: Double,
                  x2: Double, y2: Double, r2: Double): Boolean {
     val s = sqr(x2 - x1) + sqr(y2 - y1)
-    if (kotlin.math.sqrt(s) + r1 <= r2) {
+    if ( kotlin.math.sqrt(s) + r1 <= r2) {
         return true
     } else {
         return false
@@ -94,7 +80,7 @@ fun circleInside(x1: Double, y1: Double, r1: Double,
  */
 fun brickPasses(a: Int, b: Int, c: Int, r: Int, s: Int): Boolean {
     val p = r * s
-     if(a * b <= p || a * c <= p || b * c <= p) {
-       return  true
-    } else return false
-    }
+    return if ((r >= a || r >= b || r >= c) && (s >= a || s >= b || s >= c)) {
+        if (a * b <= p || a * c <= p || b * c <= p) true else false
+    } else false
+}
