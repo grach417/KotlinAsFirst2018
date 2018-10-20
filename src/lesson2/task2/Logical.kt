@@ -3,6 +3,7 @@
 package lesson2.task2
 
 import lesson1.task1.sqr
+import kotlin.math.abs
 
 /**
  * Пример
@@ -34,9 +35,10 @@ fun isNumberHappy(number: Int): Boolean {
  * Считать, что ферзи не могут загораживать друг друга.
  */
 fun queenThreatens(x1: Int, y1: Int, x2: Int, y2: Int): Boolean {
-    val d1 = kotlin.math.sqrt((sqr(x1) + sqr(y1)).toDouble())
-    val d2 = kotlin.math.sqrt((sqr(x2) + sqr(y2)).toDouble())
-    return (x1 == x2 || y1 == y2 || d1 == d2)
+    return when {
+        x1 == x2 || y1 == y2 || abs(x1 - x2) == abs(y1 - y2) -> true
+        else -> false
+    }
 }
 
 /**
@@ -58,7 +60,7 @@ else if (month <= 7 && month % 2 == 1 || month > 7 && month % 2 == 0) 31 else 30
  */
 fun circleInside(x1: Double, y1: Double, r1: Double,
                  x2: Double, y2: Double, r2: Double): Boolean {
-    val s = sqr(x1 - x2) + sqr(y1 - y2)
+    val s = sqr(x2 - x1) + sqr(y2 - y1)
     return kotlin.math.sqrt(s) + r1 <= r2
 }
 
