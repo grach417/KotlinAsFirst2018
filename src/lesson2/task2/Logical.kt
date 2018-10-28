@@ -20,13 +20,7 @@ fun pointInsideCircle(x: Double, y: Double, x0: Double, y0: Double, r: Double) =
  * Четырехзначное число назовем счастливым, если сумма первых двух ее цифр равна сумме двух последних.
  * Определить, счастливое ли заданное число, вернуть true, если это так.
  */
-fun isNumberHappy(number: Int): Boolean {
-    val n1 = number / 1000
-    val n2 = number / 100 % 10
-    val n3 = number / 10 % 10
-    val n4 = number % 10
-    return n1 + n2 == n3 + n4
-}
+fun isNumberHappy(number: Int): Boolean = number / 1000 + number / 100 % 10 == number / 10 % 10 + number % 10
 
 /**
  * Простая
@@ -44,13 +38,11 @@ fun queenThreatens(x1: Int, y1: Int, x2: Int, y2: Int): Boolean =
  * Дан номер месяца (от 1 до 12 включительно) и год (положительный).
  * Вернуть число дней в этом месяце этого года по григорианскому календарю.
  */
-fun daysInMonth(month: Int, year: Int): Int {
-    return when (month) {
-        2 -> if (year % 4 != 0 || (year % 100 == 0 && year % 400 != 0)) 28
-        else 29
-        else -> if (month <= 7 && month % 2 == 1 || month > 7 && month % 2 == 0) 31
-        else 30
-    }
+fun daysInMonth(month: Int, year: Int): Int = when (month) {
+    2 -> if (year % 4 != 0 || (year % 100 == 0 && year % 400 != 0)) 28
+    else 29
+    else -> if (month <= 7 && month % 2 == 1 || month > 7 && month % 2 == 0) 31
+    else 30
 }
 
 /**
@@ -72,10 +64,8 @@ fun circleInside(x1: Double, y1: Double, r1: Double,
  * кирпич 4 х 4 х 4 пройдёт через отверстие 4 х 4.
  * Вернуть true, если кирпич пройдёт
  */
-fun brickPasses(a: Int, b: Int, c: Int, r: Int, s: Int): Boolean {
-    return when {
-        a >= b && a >= c -> b <= r && c <= s || c <= r && b <= s
-        b >= a && b >= c -> a <= r && c <= s || c <= r && a <= s
-        else -> b <= r && a <= s || a <= r && b <= s
-    }
+fun brickPasses(a: Int, b: Int, c: Int, r: Int, s: Int): Boolean = when {
+    a >= b && a >= c -> b <= r && c <= s || c <= r && b <= s
+    b >= a && b >= c -> a <= r && c <= s || c <= r && a <= s
+    else -> b <= r && a <= s || a <= r && b <= s
 }
