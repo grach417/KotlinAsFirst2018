@@ -1,13 +1,11 @@
-@file:Suppress("UNUSED_PARAMETER", "NO_TAIL_CALLS_FOUND")
+@file:Suppress("UNUSED_PARAMETER")
 
 package lesson3.task1
 
 import lesson1.task1.sqr
+import java.lang.Math.PI
 import java.lang.Math.pow
-import kotlin.math.abs
-import kotlin.math.max
-import kotlin.math.min
-import kotlin.math.sqrt
+import kotlin.math.*
 
 /**
  * Пример
@@ -78,7 +76,7 @@ fun digitNumber(n: Int): Int {
     do {
         numbers++
         nuM /= 10
-    } while (nuM > 0)
+    } while (pow(nuM.toDouble(), 2.0) > 0)
     return numbers
 }
 
@@ -92,13 +90,17 @@ fun digitNumber(n: Int): Int {
 fun fib(n: Int): Int {
     var q: Int
     var nuM = 0
-    var nFIB = 0
-    for (i in 1..n) if (i == 1) nFIB = 1 else {
-        q = nuM
-        nuM = nFIB
-        nFIB += q
+    var nfib = 0
+    for (i in 1..n) {
+        if (i == 1) {
+            nfib = 1
+        } else {
+            q = nuM
+            nuM = nfib
+            nfib += q
+        }
     }
-    return nFIB
+    return nfib
 }
 
 /**
@@ -108,11 +110,11 @@ fun fib(n: Int): Int {
  * минимальное число k, которое делится и на m и на n без остатка
  */
 fun lcm(m: Int, n: Int): Int {
-    val mAx = max(m, n)
-    val mIn = min(m, n)
+    val max = max(m, n)
+    val min = min(m, n)
     var k = 1
-    while (mAx * k % mIn != 0) k++
-    return mAx * k
+    while ((max * k).rem(min) != 0) k++
+    return max * k
 }
 
 /**
@@ -122,10 +124,12 @@ fun lcm(m: Int, n: Int): Int {
  */
 fun minDivisor(n: Int): Int {
     var q = n
-    if (n % 2 == 0) q = 2
-    else for (i in 3..n / 3 step 2) if (n % i == 0) {
-        q = i
-        break
+    if (n.rem(2) == 0) q = 2
+    else for (i in 3..n / 3 step 2) {
+        if (n.rem(i) == 0) {
+            q = i
+            break
+        }
     }
     return q
 }
@@ -135,15 +139,7 @@ fun minDivisor(n: Int): Int {
  *
  * Для заданного числа n > 1 найти максимальный делитель, меньший n
  */
-fun maxDivisor(n: Int): Int {
-    var q = 2
-    if (n % 2 != 0) for (i in 3..n / 5 step 2) {
-        q = i
-        if (n % i == 0) break
-        if (i >= n / 5) q = n
-    }
-    return n / q
-}
+fun maxDivisor(n: Int): Int = n / minDivisor(n)
 
 /**
  * Простая
@@ -153,12 +149,16 @@ fun maxDivisor(n: Int): Int {
  * Например, 25 и 49 взаимно простые, а 6 и 8 -- нет.
  */
 fun isCoPrime(m: Int, n: Int): Boolean {
-    var q = true
-    if (m % 2 == 0 && n % 2 == 0) q = false else for (i in 3..min(m, n) step 2) if (m % i == 0 && n % i == 0) {
-        q = false
-        break
+    var q = m
+    var w = n
+    while ((q != 1) && (w != 1)) {
+        when {
+            max(q, w).rem(min(q, w)) == 0 -> return false
+            q > w -> q %= w
+            else -> w %= q
+        }
     }
-    return q
+    return true
 }
 
 /**
@@ -168,14 +168,7 @@ fun isCoPrime(m: Int, n: Int): Boolean {
  * то есть, существует ли такое целое k, что m <= k*k <= n.
  * Например, для интервала 21..28 21 <= 5*5 <= 28, а для интервала 51..61 квадрата не существует.
  */
-fun squareBetweenExists(m: Int, n: Int): Boolean {
-    var k = false
-    for (i in sqrt(m.toDouble()).toInt()..sqrt(n.toDouble()).toInt()) if ((sqr(i) >= m) && (sqr(i) <= n)) {
-        k = true
-        break
-    }
-    return k
-}
+fun squareBetweenExists(m: Int, n: Int): Boolean = sqr(sqrt(n.toDouble()).toInt()) in m..n
 
 /**
  * Средняя
@@ -196,16 +189,14 @@ fun squareBetweenExists(m: Int, n: Int): Boolean {
 fun collatzSteps(x: Int): Int {
     var steps = 0
     var num = x
-    while (num > 1) if (num % 2 == 0) {
-        num /= 2
+    while (num > 1) {
         steps++
-    } else {
-        num = 3 * num + 1
-        steps++
+        if (num % 2 == 0) num /= 2 else {
+            num = 3 * num + 1
+        }
     }
     return steps
 }
-
 
 /**
  * Средняя
@@ -215,19 +206,20 @@ fun collatzSteps(x: Int): Int {
  * Нужную точность считать достигнутой, если очередной член ряда меньше eps по модулю
  */
 fun sin(x: Double, eps: Double): Double  {
-    val unit = x % (Math.PI * 2)
-    var fac = 1
-    var wop = 1.0
-    var befr = 1
-    var sum = 0.0
-    while (abs(pow(unit, wop) / factorial(fac)) >= eps) {
-        sum += befr * pow(unit, wop) / factorial(fac)
-        befr *= -1
-        wop += 2
-        fac += 2
+    val u = x.rem(PI * 2)
+    var f = 1
+    var w = 1.0
+    var b = 1
+    var s = 0.0
+    while (abs(pow(u, w) / factorial(f)) >= eps) {
+        s += b * pow(u, w) / factorial(f)
+        b *= -1
+        w += 2
+        f += 2
     }
-    return sum
+    return s
 }
+
 
 /**
  * Средняя
@@ -236,19 +228,19 @@ fun sin(x: Double, eps: Double): Double  {
  * cos(x) = 1 - x^2 / 2! + x^4 / 4! - x^6 / 6! + ...
  * Нужную точность считать достигнутой, если очередной член ряда меньше eps по модулю
  */
-fun cos(x: Double, eps: Double): Double  {
-    val unit = x % (Math.PI * 2)
-    var fac = 2
-    var wop = 2.0
-    var befr = -1
-    var sum = 1.0
-    while (abs(pow(unit, wop) / factorial(fac)) >= eps) {
-        sum += befr * pow(unit, wop) / factorial(fac)
-        befr *= -1
-        wop += 2
-        fac += 2
+fun cos(x: Double, eps: Double): Double {
+    val unit = x.rem(PI * 2)
+    var f = 2
+    var w = 2.0
+    var b = -1
+    var s = 1.0
+    while (abs(pow(unit, w) / factorial(f)) >= eps) {
+        s += b * pow(unit, w) / factorial(f)
+        b *= -1
+        w += 2
+        f += 2
     }
-    return sum
+    return s
 }
 
 /**
@@ -261,10 +253,10 @@ fun cos(x: Double, eps: Double): Double  {
 fun revert(n: Int): Int {
     var num = 0.0
     var mun = 0.0
-    val quanNUMS = digitNumber(n)
-    if (quanNUMS == 1) num = n.toDouble()
-    else for (i in 1..quanNUMS) {
-        num += (n % pow(10.0, i * 1.0) - mun) / pow(10.0, (i - 1) * 1.0) * pow(10.0, (quanNUMS - i).toDouble())
+    val quan = digitNumber(n)
+    if (quan == 1) num = n.toDouble()
+    else for (i in 1..quan) {
+        num += (n % pow(10.0, i * 1.0) - mun) / pow(10.0, (i - 1) * 1.0) * pow(10.0, (quan - i).toDouble())
         mun = n % pow(10.0, i * 1.0)
     }
     return num.toInt()
@@ -279,16 +271,7 @@ fun revert(n: Int): Int {
  *
  * Использовать операции со строками в этой задаче запрещается.
  */
-fun isPalindrome(n: Int): Boolean {
-    var q = 1
-    var poLid = true
-    val quanNUMS = digitNumber(n)
-    if (quanNUMS % 2 == 0) q = 0
-    val riGht = revert((n % pow(10.0, ((quanNUMS / 2).toDouble()))).toInt())
-    val leFt = (n - riGht) / pow(10.0, ((quanNUMS / 2 + q).toDouble())).toInt()
-    if (riGht != leFt) poLid = false
-    return poLid
-}
+fun isPalindrome(n: Int): Boolean = revert(n) == n
 
 
 /**
@@ -300,17 +283,13 @@ fun isPalindrome(n: Int): Boolean {
  * Использовать операции со строками в этой задаче запрещается.
  */
 fun hasDifferentDigits(n: Int): Boolean {
-    var q = 0
-    var rEs = true
-    var w = n % 10
-    var quanNUMS = digitNumber(n)
-    quanNUMS--
-    for (i in 0..quanNUMS) {
-        q += w
-        w *= 10
+    var q = n.rem(10)
+    var w = 0
+    for (i in 0 until digitNumber(n)) {
+        w += q
+        q *= 10
     }
-    if (q == n) rEs = false
-    return rEs
+    return w != n
 }
 
 /**
@@ -322,20 +301,19 @@ fun hasDifferentDigits(n: Int): Boolean {
  *
  * Использовать операции со строками в этой задаче запрещается.
  */
-fun squareSequenceDigit(n: Int): Int {
-    var w = 0
-    var q: Int
-    var quanNUMS = 0
-    while (quanNUMS < n) {
-        w++
-        q = pow(w.toDouble(), 2.0).toInt()
-        while (q > 0) {
-            quanNUMS++
-            q /= 10
+fun squareSequenceDigit(n: Int): Int{
+    var q = 0
+    var l = 0
+    var w: Int
+    while (l < n) {
+        q++
+        w = q * q
+        while (w > 0) {
+            l++
+            w /= 10
         }
     }
-    w = (pow(w.toDouble(), 2.0).toInt() % pow(10.0, (quanNUMS - n + 1) * 1.0) / pow(10.0, (quanNUMS - n) * 1.0)).toInt()
-    return w
+    return (q * q % pow(10.0, (l - n + 1) * 1.0) / pow(10.0, (l - n) * 1.0)).toInt()
 }
 
 /**
@@ -348,19 +326,15 @@ fun squareSequenceDigit(n: Int): Int {
  * Использовать операции со строками в этой задаче запрещается.
  */
 fun fibSequenceDigit(n: Int): Int {
-    var q = fib(n)
-    if (n > 5) {
-        var quanNUMS = 5
-        q = 5
-        while (quanNUMS < n) {
-            q++
-            var fbnch = fib(q)
-            while (fbnch > 0) {
-                quanNUMS++
-                fbnch /= 10
-            }
+    var q = 1
+    var l = 1
+    while (l < n) {
+        q++
+        var fbnch = fib(q)
+        while (fbnch > 0) {
+            l++
+            fbnch /= 10
         }
-        q = (fib(q) % pow(10.0, (quanNUMS - n + 1) * 1.0) / pow(10.0, (quanNUMS - n) * 1.0)).toInt()
     }
-    return q
+    return (fib(q) % pow(10.0, (l - n + 1) * 1.0) / pow(10.0, (l - n) * 1.0)).toInt()
 }
