@@ -198,18 +198,25 @@ fun findCheapestStuff(stuff: Map<String, Pair<String, Double>>, kind: String): S
  *        )
  */
 fun propagateHandshakes(friends: Map<String, Set<String>>): Map<String, Set<String>> {
-    val q = friends.toMutableMap()
-    friends.forEach { (i, w) ->
-        w.forEach { e ->
-            if (!friends.containsKey(e)) q[e] = setOf()
-            if (friends[e] != null) friends[e]!!.forEach { n ->
-                if (n != i && !w.contains(n)) q[i] = q[i]!! + n
-            }
-        }
+    val r = mutableMapOf<String, Set<String>>()
+    val q = mutableSetOf<String>()
+    friends.forEach { (s, d) ->
+        q += s
+        q += d
     }
-    return q
+    q.forEach { i ->
+        val e = friends[i]?.toMutableSet() ?: mutableSetOf()
+        (0..(friends.size - 2))
+                .forEach { c ->
+                    friends.keys.forEach { a ->
+                        if (a in e) e += friends[a] ?: mutableSetOf()
+                        e -= i
+                    }
+                }
+        r += (i to e)
+    }
+    return r
 }
-
 /**
  * Простая
  *
@@ -245,8 +252,17 @@ fun whoAreInBoth(a: List<String>, b: List<String>): List<String> = a.toSet().int
  * Например:
  *   canBuildFrom(listOf('a', 'b', 'o'), "baobab") -> true
  */
-fun canBuildFrom(chars: List<Char>, word: String): Boolean = chars.toSet() == word.toSet()
-
+fun canBuildFrom(chars: List<Char>, word: String): Boolean  {
+    val q = mutableSetOf<Char>()
+    word.toLowerCase().forEach { w ->
+        q += w
+    }
+    for (i in chars) {
+        if (i.toLowerCase() in q) q -= i.toLowerCase()
+        if (q.isEmpty()) break
+    }
+    return (q.isEmpty())
+}
 /**
  * Средняя
  *
