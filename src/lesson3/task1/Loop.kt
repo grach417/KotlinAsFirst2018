@@ -6,6 +6,7 @@ import lesson1.task1.sqr
 import java.lang.Math.PI
 import java.lang.Math.pow
 import kotlin.math.*
+import kotlin.math.floor
 
 /**
  * Пример
@@ -90,17 +91,17 @@ fun digitNumber(n: Int): Int {
 fun fib(n: Int): Int {
     var q: Int
     var nuM = 0
-    var nFib = 0
+    var w = 0
     (1..n).forEach { i ->
         if (i == 1) {
-            nFib = 1
+            w = 1
         } else {
             q = nuM
-            nuM = nFib
-            nFib += q
+            nuM = w
+            w += q
         }
     }
-    return nFib
+    return w
 }
 
 /**
@@ -168,7 +169,7 @@ fun isCoPrime(m: Int, n: Int): Boolean {
  * то есть, существует ли такое целое k, что m <= k*k <= n.
  * Например, для интервала 21..28 21 <= 5*5 <= 28, а для интервала 51..61 квадрата не существует.
  */
-fun squareBetweenExists(m: Int, n: Int): Boolean = sqr(Math.floor(sqrt((n.toDouble())))) in m..n
+fun squareBetweenExists(m: Int, n: Int): Boolean = sqr(floor(sqrt((n.toDouble())))) in m..n
 
 /**
  * Средняя
