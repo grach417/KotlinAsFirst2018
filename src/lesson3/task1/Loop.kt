@@ -90,14 +90,14 @@ fun digitNumber(n: Int): Int {
  */
 fun fib(n: Int): Int {
     var q: Int
-    var nuM = 0
+    var a = 0
     var w = 0
     (1..n).forEach { i ->
         if (i == 1) {
             w = 1
         } else {
-            q = nuM
-            nuM = w
+            q = a
+            a = w
             w += q
         }
     }

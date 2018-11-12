@@ -6,6 +6,7 @@ import lesson1.task1.discriminant
 import java.lang.Math.pow
 import kotlin.math.pow
 import kotlin.math.sqrt
+import lesson3.task1.maxDivisor
 
 /**
  * Пример
@@ -135,9 +136,9 @@ fun mean(list: List<Double>): Double = if (list.isEmpty()) 0.0 else (list.sum() 
  * Обратите внимание, что данная функция должна изменять содержание списка list, а не его копии.
  */
 fun center(list: MutableList<Double>): MutableList<Double> {
-    if (list.isNotEmpty()) {
-        val m = mean(list)
-        for (i in 0 until list.size) list[i] -= m
+    val m = mean(list)
+    (0 until list.size).forEach { i ->
+        list[i] -= m
     }
     return list
 }
@@ -152,10 +153,10 @@ fun center(list: MutableList<Double>): MutableList<Double> {
  */
 fun times(a: List<Double>, b: List<Double>): Double {
     val c = mutableListOf<Double>()
-    if (a.isEmpty() && b.isEmpty()) return 0.0 else {
-        for (i in 0 until a.size) c.add(a[i] * b[i])
+    (0 until a.size).forEach { i ->
+        c.add(a[i] * b[i])
     }
-    return (c.sum())
+    return c.sum()
 }
 
 
@@ -169,9 +170,9 @@ fun times(a: List<Double>, b: List<Double>): Double {
  */
 fun polynom(p: List<Double>, x: Double): Double {
     val r = mutableListOf<Double>()
-    if (p.isEmpty()) {
-        return 0.0
-    } else for (i in 0 until p.size) r.add(p[i] * pow(x, i.toDouble()))
+    (0 until p.size).forEach { i ->
+        r.add(p[i] * pow(x, i.toDouble()))
+    }
     return r.sum()
 }
 
@@ -199,14 +200,18 @@ fun accumulate(list: MutableList<Double>): MutableList<Double> {
  * Множители в списке должны располагаться по возрастанию.
  */
 fun factorize(n: Int): List<Int> {
-    val r = mutableListOf<Int>()
-    var q = 2
+    val q = mutableListOf<Int>()
     var w = n
-    while (w != 1) if (w % q == 0) {
-        r.add(q)
-        w /= q
-    } else q += 1
-    return if (r.size == 0) listOf(n) else r
+    (2..maxDivisor(w)).forEach { i ->
+        while (w % i == 0) {
+            w /= i
+            q.add(i)
+        }
+    }
+    return when {
+        q.isEmpty() -> listOf(n)
+        else -> q.sorted()
+    }
 }
 
 /**
@@ -227,7 +232,6 @@ fun factorizeToString(n: Int): String = factorize(n).joinToString("*")
  */
 fun convert(n: Int, base: Int): List<Int> {
     val l = mutableListOf<Int>()
-    if (n == 1 || n < base) return listOf(n)
     var num = n
     while (num > 0) {
         l.add(num % base)
@@ -244,15 +248,7 @@ fun convert(n: Int, base: Int): List<Int> {
  * строчными буквами: 10 -> a, 11 -> b, 12 -> c и так далее.
  * Например: n = 100, base = 4 -> 1210, n = 250, base = 14 -> 13c
  */
-fun convertToString(n: Int, base: Int): String {
-    val q = convert(n, base)
-    val l = mutableListOf<String>()
-    for (i in 0 until q.size) {
-        if (q[i] >= 10) l.add((87 + q[i]).toChar().toString())
-        else l.add(q[i].toString())
-    }
-    return l.joinToString(separator = "")
-}
+fun convertToString(n: Int, base: Int): String = n.toString(base)
 
 /**
  * Средняя
@@ -277,14 +273,7 @@ fun decimal(digits: List<Int>, base: Int): Int {
  * 10 -> a, 11 -> b, 12 -> c и так далее.
  * Например: str = "13c", base = 14 -> 250
  */
-fun decimalFromString(str: String, base: Int): Int {
-    val list = mutableListOf<Int>()
-    for (char in str) {
-        if (char in '0'..'9') list.add(char.toString().toInt())
-        else list.add((char).toInt() - 87)
-    }
-    return decimal(list, base)
-}
+fun decimalFromString(str: String, base: Int): Int = str.toInt(base)
 
 /**
  * Сложная
@@ -295,22 +284,17 @@ fun decimalFromString(str: String, base: Int): Int {
  * Например: 23 = XXIII, 44 = XLIV, 100 = C
  */
 fun roman(n: Int): String {
-    val a = listOf(1, 4, 5, 9, 10, 40, 50, 90, 100, 400, 500, 900, 1000)
-    val r = listOf("I", "IV", "V", "IX", "X", "XL", "L", "XC", "C", "CD", "D", "CM", "M")
-    var q = ""
+    val q = mapOf("M" to 1000, "CM" to 900, "D" to 500, "CD" to 400, "C" to 100, "XC" to 90,
+            "L" to 50, "XL" to 40, "X" to 10, "IX" to 9, "V" to 5, "IV" to 4, "I" to 1)
     var w = n
-    while (w / 1000 > 0) {
-        w -= a[12]
-        q += r[12]
-    }
-    while (w > 0) for (i in 0 until a.size) {
-        if (w < a[i]) {
-            w -= a[i - 1]
-            q += r[i - 1]
-            break
+    val e = mutableListOf<String>()
+    q.forEach { (r, a) ->
+        while (w >= a) {
+            e.add(r)
+            w -= a
         }
     }
-    return q
+    return e.joinToString(separator = "")
 }
 
 /**
@@ -321,7 +305,7 @@ fun roman(n: Int): String {
  * 23964 = "двадцать три тысячи девятьсот шестьдесят четыре"
  */
 fun russian(n: Int): String {
-    fun dopFun(n: Int): List<String> =
+    fun dop(n: Int): List<String> =
             when (n % 10) {
                 1 -> listOf("один", "", "сто", "одна тысяча")
                 2 -> listOf("два", "двадцать", "двести", "две тысячи")
@@ -348,12 +332,12 @@ fun russian(n: Int): String {
         17 -> "семнадцать"
         18 -> "восемнадцать"
         19 -> "девятнадцать"
-        else -> dopFun(q)[0]
+        else -> dop(q)[0]
     }
     q /= 10
-    l += dopFun(q)[1]
+    l += dop(q)[1]
     q /= 10
-    l += dopFun(q)[2]
+    l += dop(q)[2]
     q /= 10
     l += when (q % 100) {
         10 -> "десять тысяч"
@@ -366,12 +350,12 @@ fun russian(n: Int): String {
         17 -> "семнадцать тысяч"
         18 -> "восемнадцать тысяч"
         19 -> "девятнадцать тысяч"
-        else -> dopFun(q)[3]
+        else -> dop(q)[3]
     }
     if (q % 10 == 0 && q > 0) l += "тысяч"
     q /= 10
-    l += dopFun(q)[1]
+    l += dop(q)[1]
     q /= 10
-    l += dopFun(q)[2]
+    l += dop(q)[2]
     return l.reversed().filter { it != "" }.joinToString(separator = " ")
 }
