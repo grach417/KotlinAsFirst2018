@@ -207,7 +207,7 @@ fun propagateHandshakes(friends: Map<String, Set<String>>): Map<String, Set<Stri
     q.forEach { i ->
         val e = friends[i]?.toMutableSet() ?: mutableSetOf()
         (0..(friends.size - 2))
-                .forEach { c ->
+                .forEach { _ ->
                     friends.keys.forEach { a ->
                         if (a in e) e += friends[a] ?: mutableSetOf()
                         e -= i
@@ -343,58 +343,24 @@ fun findSumOfTwo(list: List<Int>, number: Int): Pair<Int, Int> {
  *     450
  *   ) -> emptySet()
  */
-fun bagPacking(treasures: Map<String, Pair<Int, Int>>, capacity: Int): Set<String> {
-    val q = mutableSetOf<String>()
-    val w = mutableListOf<Pair<Int, Int>>()
-    val e = mutableSetOf<Int>()
-    treasures.values.forEach { (r, t) ->
-        if (r <= capacity) w += (r to t)
-    }
-    var c = 0
-    (0 until w.size).forEach { c1 ->
-        var r2 = w[c1].first
-        if (c == 0) c = w[c1].second
-        var cost2 = w[c1].second
-        var r3 = 0
-        var cost3 = 0
-        if (e.isEmpty()) e += c1
-        ((c1 + 1) until w.size).forEach { c2 ->
-            when {
-                (r3 < w[c2].first) && (cost3 <= w[c2].second) && (r2 + w[c2].first <= capacity) &&
-                        (w[c1].second + w[c2].second >= c) -> {
-                    e.clear()
-                    e += c1
-                    e += c2
-                    r2 = w[c1].first + w[c2].first
-                    r3 = w[c2].first
-                    cost2 = w[c1].second + w[c2].second
-                    cost3 = w[c2].second
-                    c = w[c1].second + w[c2].second
-                }
-                else -> {
-                    r2 += w[c2].first
-                    r3 += w[c2].first
-                    when {
-                        (r2 <= capacity) && (cost2 + w[c2].second > c) -> {
-                            e += c1
-                            e += c2
-                            cost2 += w[c2].second
-                            cost3 += w[c2].second
-                            c += w[c2].second
-                        }
-                        else -> {
-                            r2 -= w[c2].first
-                            r3 -= w[c2].first
-                        }
+fun bagPacking(treasures: Map<String, Pair<Int, Int>>, capacity: Int): Set<String>{
+    val q = treasures.filterValues {
+        it.first <= capacity}.toList().sortedByDescending {
+        it.second.second}.toMap()
+    var w = capacity
+    var e = setOf<String>()
+    return when {
+        q.isEmpty() -> emptySet()
+        else -> {
+            q.forEach { (name, features) ->
+                when {
+                    features.first <= w -> {
+                        w -= features.first
+                        e += name
                     }
                 }
             }
+            e
         }
     }
-    e.forEach { i ->
-        treasures.forEach { (a, b) ->
-            if (b == w[i]) q += a
-        }
-    }
-    return q
 }
