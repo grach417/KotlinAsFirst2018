@@ -187,7 +187,9 @@ fun polynom(p: List<Double>, x: Double): Double {
  * Обратите внимание, что данная функция должна изменять содержание списка list, а не его копии.
  */
 fun accumulate(list: MutableList<Double>): MutableList<Double> {
-    if (list.isNotEmpty()) for (i in 1 until list.size) list[i] += list[i - 1]
+    (1 until list.size).forEach { i ->
+        list[i] += list[i - 1]
+    }
     return list
 }
 
@@ -202,16 +204,13 @@ fun accumulate(list: MutableList<Double>): MutableList<Double> {
 fun factorize(n: Int): List<Int> {
     val q = mutableListOf<Int>()
     var w = n
-    (2..maxDivisor(w)).forEach { i ->
-        while (w % i == 0) {
-            w /= i
-            q.add(i)
-        }
+    var e = 2
+    while (w != 1){
+        while (w % e != 0) e++
+        q.add(e)
+        w /= e
     }
-    return when {
-        q.isEmpty() -> listOf(n)
-        else -> q.sorted()
-    }
+    return q
 }
 
 /**
@@ -306,7 +305,7 @@ fun roman(n: Int): String {
  * 23964 = "двадцать три тысячи девятьсот шестьдесят четыре"
  */
 fun russian(n: Int): String {
-    fun dop(n: Int): List<String> =
+    fun funRussian(n: Int): List<String> =
             when (n % 10) {
                 1 -> listOf("один", "", "сто", "одна тысяча")
                 2 -> listOf("два", "двадцать", "двести", "две тысячи")
@@ -333,12 +332,12 @@ fun russian(n: Int): String {
         17 -> "семнадцать"
         18 -> "восемнадцать"
         19 -> "девятнадцать"
-        else -> dop(q)[0]
+        else -> funRussian(q)[0]
     }
     q /= 10
-    l += dop(q)[1]
+    l += funRussian(q)[1]
     q /= 10
-    l += dop(q)[2]
+    l += funRussian(q)[2]
     q /= 10
     l += when (q % 100) {
         10 -> "десять тысяч"
@@ -351,12 +350,12 @@ fun russian(n: Int): String {
         17 -> "семнадцать тысяч"
         18 -> "восемнадцать тысяч"
         19 -> "девятнадцать тысяч"
-        else -> dop(q)[3]
+        else -> funRussian(q)[3]
     }
     if (q % 10 == 0 && q > 0) l += "тысяч"
     q /= 10
-    l += dop(q)[1]
+    l += funRussian(q)[1]
     q /= 10
-    l += dop(q)[2]
+    l += funRussian(q)[2]
     return l.reversed().filter { it != "" }.joinToString(separator = " ")
 }
