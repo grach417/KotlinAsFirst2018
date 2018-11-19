@@ -3,10 +3,10 @@
 package lesson4.task1
 
 import lesson1.task1.discriminant
+import lesson3.task1.isPrime
 import java.lang.Math.pow
 import kotlin.math.pow
 import kotlin.math.sqrt
-import lesson3.task1.maxDivisor
 
 /**
  * Пример
@@ -204,11 +204,14 @@ fun accumulate(list: MutableList<Double>): MutableList<Double> {
 fun factorize(n: Int): List<Int> {
     val q = mutableListOf<Int>()
     var w = n
-    var e = 2
-    while (w != 1){
-        while (w % e != 0) e++
-        q.add(e)
-        w /= e
+    when {
+        isPrime(n) -> q.add(n)
+        else -> (2..n / 2).forEach { i ->
+            while (w % i == 0 && w > 1) {
+                q.add(i)
+                w /= i
+            }
+        }
     }
     return q
 }
