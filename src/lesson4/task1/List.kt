@@ -207,7 +207,7 @@ fun factorize(n: Int): List<Int> {
     when {
         isPrime(n) -> q.add(n)
         else -> (2..n / 2).forEach { i ->
-            while (w % i == 0 && w > 1) {
+            while (w % i == 0) {
                 q.add(i)
                 w /= i
             }
