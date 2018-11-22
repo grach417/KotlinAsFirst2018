@@ -198,26 +198,26 @@ fun findCheapestStuff(stuff: Map<String, Pair<String, Double>>, kind: String): S
  *        )
  */
 fun propagateHandshakes(friends: Map<String, Set<String>>): Map<String, Set<String>> {
-    var q = mutableMapOf<String, MutableSet<String>>()
-    val w = mutableMapOf<String, MutableSet<String>>()
-    friends.forEach { (s) ->
-        w[s] = friends[s]!!.toMutableSet()
+    fun funHandshakes(friends: Map<String, Set<String>>, set: Set<String>): Set<String> {
+        val q = set.toMutableSet()
+        set.forEach { if (friends.contains(it)) q.addAll(friends[it]!!) }
+        return q
     }
-    while (w != q) {
-        q = w
-        q.forEach { (s, r) ->
-            r.forEach { i ->
-                when (i) {
-                    in q -> w[s] = w[s]!!.union(q[i]!!).toMutableSet()
-                    else -> w[i] = mutableSetOf()
-                }
-            }
+
+    val res = friends.toMutableMap()
+    friends.forEach { (s, v) ->
+        var variableValue = v
+        var previousValue: MutableSet<String>
+        do {
+            previousValue = variableValue.toMutableSet()
+            variableValue = funHandshakes(friends, variableValue)
+        } while (variableValue != previousValue)
+        res[s] = variableValue - s
+        v.filter { !res.contains(it) }.forEach { friend ->
+            res[friend] = mutableSetOf()
         }
     }
-    q.map {
-        if (it.value.contains(it.key)) it.value.remove(it.key)
-    }
-    return q
+    return res
 }
 
 /**
@@ -256,7 +256,9 @@ fun whoAreInBoth(a: List<String>, b: List<String>): List<String> = a.toSet().int
  *   canBuildFrom(listOf('a', 'b', 'o'), "baobab") -> true
  */
 fun canBuildFrom(chars: List<Char>, word: String): Boolean = word.toLowerCase().all {
-    chars.map { lit -> lit.toLowerCase() }.contains(it)}
+    chars.map { lit -> lit.toLowerCase() }.contains(it)
+}
+
 /**
  * Средняя
  *
@@ -300,6 +302,7 @@ fun hasAnagrams(words: List<String>): Boolean {
     }
     return false
 }
+
 /**
  * Сложная
  *
@@ -346,19 +349,36 @@ fun findSumOfTwo(list: List<Int>, number: Int): Pair<Int, Int> {
  *     450
  *   ) -> emptySet()
  */
-fun bagPacking(treasures: Map<String, Pair<Int, Int>>, capacity: Int): Set<String>{
-    val production = mutableSetOf<String>()
-    val bunch = treasures.map { it.key to it.value }.sortedBy {
-        it.second.second / it.second.first }
-    var freePlace= capacity
-    loop@ for ((treasuresTitle, weightCost) in bunch) {
-        when {
-            freePlace - weightCost.first < 0 -> break@loop
-            else -> {
-                production.add(treasuresTitle)
-                freePlace -= weightCost.first
+fun bagPacking(treasures: Map<String, Pair<Int, Int>>, capacity: Int): Set<String> {
+    val q = mutableSetOf<String>()
+    val a = Array(treasures.size + 1) { _ ->
+        Array(capacity + 1) { 0 } }
+    (1 until capacity).forEach { i ->
+        a[0][i] = 0
+    }
+    (1 until treasures.size).forEach { i ->
+        a[i][0] = 0
+    }
+    (2 until treasures.size).forEach { k ->
+        (2 until capacity).forEach { s ->
+            val currentWeight = treasures.values.toList()[k - 1]
+            when {
+                s >= currentWeight.first -> a[k][s] = maxOf(a[k - 1][s],
+                        a[k - 1][s - currentWeight.first] + currentWeight.second)
+                else -> a[k][s] = a[k - 1][s]
             }
         }
     }
-    return production.toSet()
+    fun findAns(k: Int, s: Int) {
+        when {
+            a[k][s] == 0 -> return
+            a[k - 1][s] == a[k][s] -> findAns(k - 1, s)
+            else -> {
+                findAns(k - 1, s - treasures.values.toList()[k - 1].first)
+                q.add(treasures.keys.toList()[k - 1])
+            }
+        }
+    }
+    findAns(treasures.size, capacity)
+    return q
 }
