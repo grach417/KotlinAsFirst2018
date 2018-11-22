@@ -120,7 +120,7 @@ fun buildGrades(grades: Map<String, Int>): Map<Int, List<String>> {
     grades.forEach { (i, w) ->
         when {
             q[w] == null -> q[w] = mutableListOf(i)
-            else -> q[w]?.add(i)
+            else -> q[w]!!.add(i)
         }
     }
     q.forEach { it -> it.value.sortDescending() }
@@ -198,25 +198,28 @@ fun findCheapestStuff(stuff: Map<String, Pair<String, Double>>, kind: String): S
  *        )
  */
 fun propagateHandshakes(friends: Map<String, Set<String>>): Map<String, Set<String>> {
-    val r = mutableMapOf<String, Set<String>>()
-    val q = mutableSetOf<String>()
-    friends.forEach { (s, d) ->
-        q += s
-        q += d
+    var q = mutableMapOf<String, MutableSet<String>>()
+    val w = mutableMapOf<String, MutableSet<String>>()
+    friends.forEach { (s) ->
+        w[s] = friends[s]!!.toMutableSet()
     }
-    q.forEach { i ->
-        val e = friends[i]?.toMutableSet() ?: mutableSetOf()
-        (0..(friends.size - 2))
-                .forEach { _ ->
-                    friends.keys.forEach { a ->
-                        if (a in e) e += friends[a] ?: mutableSetOf()
-                        e -= i
-                    }
+    while (w != q) {
+        q = w
+        q.forEach { (s, r) ->
+            r.forEach { i ->
+                when (i) {
+                    in q -> w[s] = w[s]!!.union(q[i]!!).toMutableSet()
+                    else -> w[i] = mutableSetOf()
                 }
-        r += (i to e)
+            }
+        }
     }
-    return r
+    q.map {
+        if (it.value.contains(it.key)) it.value.remove(it.key)
+    }
+    return q
 }
+
 /**
  * Простая
  *
@@ -252,17 +255,8 @@ fun whoAreInBoth(a: List<String>, b: List<String>): List<String> = a.toSet().int
  * Например:
  *   canBuildFrom(listOf('a', 'b', 'o'), "baobab") -> true
  */
-fun canBuildFrom(chars: List<Char>, word: String): Boolean  {
-    val q = mutableSetOf<Char>()
-    word.toLowerCase().forEach { w ->
-        q += w
-    }
-    for (i in chars) {
-        if (i.toLowerCase() in q) q -= i.toLowerCase()
-        if (q.isEmpty()) break
-    }
-    return (q.isEmpty())
-}
+fun canBuildFrom(chars: List<Char>, word: String): Boolean = word.toLowerCase().all {
+    chars.map { lit -> lit.toLowerCase() }.contains(it)}
 /**
  * Средняя
  *
@@ -295,8 +289,17 @@ fun extractRepeats(list: List<String>): Map<String, Int> {
  * Например:
  *   hasAnagrams(listOf("тор", "свет", "рот")) -> true
  */
-fun hasAnagrams(words: List<String>): Boolean = words.map { it.toSet() }.toSet().size != words.size
-
+fun hasAnagrams(words: List<String>): Boolean {
+    val q = mutableMapOf<String, List<Char>>()
+    for (i in words) {
+        val s = i.toList().sorted()
+        when {
+            q.containsValue(s) -> return true
+            else -> q[i] = s
+        }
+    }
+    return false
+}
 /**
  * Сложная
  *
@@ -344,23 +347,18 @@ fun findSumOfTwo(list: List<Int>, number: Int): Pair<Int, Int> {
  *   ) -> emptySet()
  */
 fun bagPacking(treasures: Map<String, Pair<Int, Int>>, capacity: Int): Set<String>{
-    val q = treasures.filterValues {
-        it.first <= capacity}.toList().sortedByDescending {
-        it.second.second}.toMap()
-    var w = capacity
-    var e = setOf<String>()
-    return when {
-        q.isEmpty() -> emptySet()
-        else -> {
-            q.forEach { (name, features) ->
-                when {
-                    features.first <= w -> {
-                        w -= features.first
-                        e += name
-                    }
-                }
+    val production = mutableSetOf<String>()
+    val bunch = treasures.map { it.key to it.value }.sortedBy {
+        it.second.second / it.second.first }
+    var freePlace= capacity
+    loop@ for ((treasuresTitle, weightCost) in bunch) {
+        when {
+            freePlace - weightCost.first < 0 -> break@loop
+            else -> {
+                production.add(treasuresTitle)
+                freePlace -= weightCost.first
             }
-            e
         }
     }
+    return production.toSet()
 }
