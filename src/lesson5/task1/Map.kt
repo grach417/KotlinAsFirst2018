@@ -359,8 +359,8 @@ fun bagPacking(treasures: Map<String, Pair<Int, Int>>, capacity: Int): Set<Strin
     (1 until treasures.size).forEach { i ->
         a[i][0] = 0
     }
-    (2 until treasures.size).forEach { k ->
-        (2 until capacity).forEach { s ->
+    (1 until treasures.size + 1).forEach { k ->
+        (1 until capacity + 1).forEach { s ->
             val currentWeight = treasures.values.toList()[k - 1]
             when {
                 s >= currentWeight.first -> a[k][s] = maxOf(a[k - 1][s],
