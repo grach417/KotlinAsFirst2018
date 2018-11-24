@@ -3,7 +3,6 @@
 package lesson6.task1
 
 import lesson2.task2.daysInMonth
-import kotlin.math.floor
 
 /**
  * Пример
@@ -353,4 +352,73 @@ fun fromRoman(roman: String): Int {
  * IllegalArgumentException должен бросаться даже если ошибочная команда не была достигнута в ходе выполнения.
  *
  */
-fun computeDeviceCells(cells: Int, commands: String, limit: Int): List<Int> = TODO()
+fun computeDeviceCells(cells: Int, commands: String, limit: Int): List<Int> {
+    var q = 0
+    var numberOfCommands = 0
+    var number = cells / 2
+    val cellsSize = mutableListOf<Int>()
+    val furstBrackets = mutableMapOf<Int, Int>()
+    val secondBrackets = mutableListOf<Int>()
+    (0 until cells).forEach { _ ->
+        cellsSize.add(0)
+    }
+    (0 until commands.length).forEach { i ->
+        val char = commands[i]
+        when {
+            char != '+' && char != '-' && char != '[' && char != ']' && char != '<' && char != '>' && char != ' '
+            -> throw IllegalArgumentException()
+            char == '[' -> secondBrackets.add(i)
+        }
+        when (char) {
+            ']' -> {
+                when {
+                    secondBrackets.isEmpty() -> throw IllegalArgumentException()
+                    else -> {
+                        val indexOfLeftBracket = secondBrackets.last()
+                        furstBrackets += indexOfLeftBracket to i
+                        furstBrackets += i to indexOfLeftBracket
+                        secondBrackets.remove(indexOfLeftBracket)
+                    }
+                }
+            }
+        }
+    }
+    when {
+        secondBrackets.isNotEmpty() -> throw IllegalArgumentException()
+        else -> {
+            while (++numberOfCommands <= limit && q < commands.length) {
+                val w = q
+                when (commands[w]) {
+                    '+' -> {
+                        cellsSize[number]++
+                        q++
+                    }
+                    '-' -> {
+                        cellsSize[number]--
+                        q++
+                    }
+                    '<' -> when {
+                        --number >= 0 -> q++
+                        else -> throw IllegalStateException()
+                    }
+                    '>' -> when {
+                        ++number < cells -> q++
+                        else -> throw IllegalStateException()
+                    }
+                    '[' -> when {
+                        cellsSize[number] == 0 -> q = furstBrackets[q]!! + 1
+                        else -> q++
+                    }
+                    ']' -> when {
+                        cellsSize[number] != 0 -> q = furstBrackets[q]!! + 1
+                        else -> q++
+                    }
+                    else -> q++
+                }
+            }
+            return cellsSize
+        }
+    }
+}
+
+

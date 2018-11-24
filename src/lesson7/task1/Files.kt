@@ -54,7 +54,13 @@ fun alignFile(inputName: String, lineLength: Int, outputName: String) {
  * Регистр букв игнорировать, то есть буквы е и Е считать одинаковыми.
  *
  */
-fun countSubstrings(inputName: String, substrings: List<String>): Map<String, Int> = TODO()
+fun countSubstrings(inputName: String, substrings: List<String>): Map<String, Int>{
+    val q = mutableMapOf<String, Int>()
+    substrings.forEach {
+        q[it] = Regex(it.toLowerCase()).findAll(File(inputName).readText().toLowerCase()).toList().size
+    }
+    return q
+}
 
 
 /**
@@ -70,8 +76,18 @@ fun countSubstrings(inputName: String, substrings: List<String>): Map<String, In
  * Исключения (жюри, брошюра, парашют) в рамках данного задания обрабатывать не нужно
  *
  */
+
+
 fun sibilants(inputName: String, outputName: String) {
-    TODO()
+    val q = mapOf("ы" to "и", "я" to "а", "ю" to "у", "Ы" to "И", "Я" to "А", "Ю" to "У")
+    var text = File(inputName).readText()
+
+    q.forEach {
+        text = (Regex("""(?<=[жЖчЧшШщЩ])${it.component1()}""").replace(text, it.component2()))
+    }
+    File(outputName).bufferedWriter().use {
+        it.write(text)
+    }
 }
 
 /**
@@ -92,8 +108,24 @@ fun sibilants(inputName: String, outputName: String) {
  *
  */
 fun centerFile(inputName: String, outputName: String) {
-    TODO()
+    val listOfLine = File(inputName).readLines()
+    val maxLength = listOfLine.max()!!.trim().length
+    try {
+        File(outputName).bufferedWriter().use {
+            listOfLine.forEach { line ->
+                val newLine = line.trim()
+                val length = newLine.length
+                it.write(newLine.padStart(length + (maxLength - length) / 2, ' '))
+                it.newLine()
+            }
+        }
+    } catch (e: KotlinNullPointerException) {
+        File(outputName).bufferedWriter().use {
+            it.write("")
+        }
+    }
 }
+
 
 /**
  * Сложная
@@ -123,7 +155,36 @@ fun centerFile(inputName: String, outputName: String) {
  * 8) Если входной файл удовлетворяет требованиям 1-7, то он должен быть в точности идентичен выходному файлу
  */
 fun alignFileByWidth(inputName: String, outputName: String) {
-    TODO()
+    val output = File(outputName).bufferedWriter()
+    var maxLineLength = 0
+    File(inputName).readLines().forEach { line ->
+        when {
+            line.trim().length > maxLineLength -> maxLineLength = line.trim().length
+        }
+    }
+    File(inputName).readLines().forEach { line ->
+        val words = line.trim().split(Regex("""\s+""")).size
+        when {
+            line.trim().replace(Regex("""\s+"""), " ").length == maxLineLength ||
+                    words <= 1 -> output.write(line.trim())
+            else -> {
+                val numberOfSpaces = maxLineLength - line.trim().replace(Regex("""\s+"""), "").length
+                val spacesBetweenWords = numberOfSpaces / (words - 1)
+                val residualSpaces = numberOfSpaces % (words - 1)
+                val list = line.trim().split(Regex("""\s+"""))
+                (0 until list.size).forEach { i ->
+                    output.write(list[i])
+                    when {
+                        i == words - 1 -> return
+                        residualSpaces > i -> output.write(" ")
+                    }
+                    output.write(" ".repeat(spacesBetweenWords))
+                }
+            }
+        }
+        output.newLine()
+    }
+    output.close()
 }
 
 /**

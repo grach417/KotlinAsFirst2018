@@ -350,36 +350,41 @@ fun findSumOfTwo(list: List<Int>, number: Int): Pair<Int, Int> {
  *   ) -> emptySet()
  */
 fun bagPacking(treasures: Map<String, Pair<Int, Int>>, capacity: Int): Set<String> {
-    val q = mutableSetOf<String>()
-    val a = Array(treasures.size + 1) { _ ->
-        Array(capacity + 1) { 0 }
-    }
-    (1 until capacity).forEach { i ->
-        a[0][i] = 0
-    }
-    (1 until treasures.size).forEach { i ->
-        a[i][0] = 0
-    }
-    (1 until treasures.size + 1).forEach { k ->
-        (1 until capacity + 1).forEach { s ->
-            val currentWeight = treasures.values.toList()[k - 1]
-            when {
-                s >= currentWeight.first -> a[k][s] = maxOf(a[k - 1][s],
-                        a[k - 1][s - currentWeight.first] + currentWeight.second)
-                else -> a[k][s] = a[k - 1][s]
-            }
-        }
-    }
-    fun funBagPacking(k: Int, s: Int) {
+    var maxvalue = 0
+    val listWithMaxCost = mutableSetOf<String>()
+    val list = mutableMapOf<Int, Pair<Int, Set<String>>>()
+    val listTwo = mutableMapOf<Int, Pair<Int, Set<String>>>()
+    treasures.forEach { (name, info) ->
         when {
-            a[k][s] == 0 -> return
-            a[k - 1][s] == a[k][s] -> funBagPacking(k - 1, s)
-            else -> {
-                funBagPacking(k - 1, s - treasures.values.toList()[k - 1].first)
-                q.add(treasures.keys.toList()[k - 1])
+            info.second > list[info.first]?.first ?: maxvalue -> list[info.first] = Pair(info.second, setOf(name))
+        }
+    }
+    (1..2).forEach { _ ->
+        treasures.forEach { (name, pair) ->
+            list.forEach { (weight, info) ->
+                when (name) {
+                    !in info.second -> when {
+                        list[pair.first + weight] == null ||
+                                list[pair.first + weight]!!.first < info.first + pair.second ->
+                            listTwo[pair.first + weight] = Pair(info.first + pair.second, info.second + name)
+                    }
+                }
+            }
+            list += listTwo
+        }
+    }
+    listTwo += list
+    list.clear()
+    list += listTwo.toSortedMap()
+    for ((weight, info) in list) {
+        if (weight > capacity) break
+        when {
+            info.first > maxvalue -> {
+                maxvalue = info.first
+                listWithMaxCost.clear()
+                listWithMaxCost += info.second
             }
         }
     }
-    funBagPacking(treasures.size, capacity)
-    return q
+    return listWithMaxCost
 }
