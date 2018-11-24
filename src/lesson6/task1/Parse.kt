@@ -3,6 +3,7 @@
 package lesson6.task1
 
 import lesson2.task2.daysInMonth
+import kotlin.math.floor
 
 /**
  * Пример
@@ -72,29 +73,24 @@ fun main(args: Array<String>) {
  * входными данными.
  */
 fun dateStrToDigit(str: String): String {
-    val q = str.split(" ")
-    val d: Int
-    val m: Int
-    val y: Int
+    val cuttingOnParts = str.split(" ")
     when {
-        q.size == 3 -> {
-            val months = listOf("января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа",
-                    "сентября", "октября", "ноября", "декабря")
-            try {
-                d = q[0].toInt()
-                m = months.indexOf(q[1]) + 1
-                y = q[2].toInt()
-            } catch (e: NumberFormatException) {
-                return ""
-            }
+        cuttingOnParts.size != 3 -> return ""
+        else -> {
+            val months = listOf("января", "февраля", "марта", "апреля", "мая", "июня", "июля",
+                    "августа", "сентября", "октября", "ноября", "декабря")
             return when {
-                m == 0 -> ""
-                d > daysInMonth(m, y) -> ""
-                y < 0 -> ""
-                else -> String.format("%02d.%02d.%04d", d, m, y)
+                months.indexOf(cuttingOnParts[1]) == -1 -> ""
+                else -> {
+                    val monthNumber = months.indexOf(cuttingOnParts[1]) + 1
+                    when {
+                        daysInMonth(monthNumber, cuttingOnParts[2].toInt()) >= cuttingOnParts[0].toInt() ->
+                            String.format("%02d.%02d.%s", cuttingOnParts[0].toInt(), monthNumber, cuttingOnParts[2])
+                        else -> ""
+                    }
+                }
             }
         }
-        else -> return ""
     }
 }
 
@@ -109,28 +105,25 @@ fun dateStrToDigit(str: String): String {
  * входными данными.
  */
 fun dateDigitToStr(digital: String): String {
-    val q = digital.split(".")
-    val d: Int
-    val m: String
-    val y: Int
+    val cuttingOnParts = digital.split(".")
     when {
-        q.size != 3 -> return ""
+        cuttingOnParts.size != 3 -> return ""
         else -> {
-            val months = listOf("января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа",
-                    "сентября", "октября", "ноября", "декабря")
-            try {
-                d = q[0].toInt()
-                m = months[q[1].toInt() - 1]
-                y = q[2].toInt()
-            } catch (i: IndexOutOfBoundsException) {
-                return ""
-            } catch (i: NumberFormatException) {
-                return ""
-            }
-            return when {
-                d > daysInMonth(months.indexOf(m), y) -> ""
-                y < 0 -> ""
-                else -> String.format("%d %s %d", d, m, y)
+            val months = listOf("января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября",
+                    "октября", "ноября", "декабря")
+            when {
+                (cuttingOnParts[1].toIntOrNull() ?: return "") == 0 || (cuttingOnParts[1].toIntOrNull()
+                        ?: return "") > 12 -> return ""
+                else -> return try {
+                    when {
+                        daysInMonth(cuttingOnParts[1].toInt(), cuttingOnParts[2].toInt()) >= cuttingOnParts[0].toInt() ->
+                            String.format("%d %s %s", cuttingOnParts[0].toInt(),
+                                    months[cuttingOnParts[1].toInt() - 1], cuttingOnParts[2].toInt())
+                        else -> ""
+                    }
+                } catch (i: NumberFormatException) {
+                    ""
+                }
             }
         }
     }
@@ -148,24 +141,12 @@ fun dateDigitToStr(digital: String): String {
  * Все символы в номере, кроме цифр, пробелов и +-(), считать недопустимыми.
  * При неверном формате вернуть пустую строку
  */
-fun dopF(str: String, list: List<String>): String {
-    var p = str
-    for (i in list) p = p.replace(i, "")
-    return p
-}
-
-fun flattenPhoneNumber(phone: String): String {
-    val q = dopF(phone, listOf("(", ")", " ", "-"))
-    try {
+fun flattenPhoneNumber(phone: String): String =
         when {
-            q.first().toString() == "+" -> q.substring(1, q.length).toLong()
-            else -> q.toLong()
+            Regex("""^(\+\d+)?\(\d+\)\d+|\d+""").matches(phone.replace(Regex("""[\s-]"""), ""))
+            -> phone.replace(Regex("""[()\s-]"""), "")
+            else -> ""
         }
-    } catch (i: NumberFormatException) {
-        return ""
-    }
-    return q
-}
 
 /**
  * Средняя
@@ -178,16 +159,13 @@ fun flattenPhoneNumber(phone: String): String {
  * При нарушении формата входной строки или при отсутствии в ней чисел, вернуть -1.
  */
 fun bestLongJump(jumps: String): Int {
-    var q = jumps.split(" ")
-    q = q.filter { it != "%" && it != "-" }
-    when {
-        q.isEmpty() -> return -1
-        else -> return try {
-            q.maxBy { it.toInt() }!!.toInt()
-        } catch (i: NumberFormatException) {
-            return -1
-        }
+    val res = jumps.replace(Regex("""\s+%|\s+-|%|-"""),
+            "").trim().replace(Regex("""\s\s+"""),
+            " ").split(" ")
+    res.forEach { i ->
+        if (!i.contains(Regex("""\d|[-%]"""))) return -1
     }
+    return res.map { it.toInt() }.max()!!.toInt()
 }
 
 /**
@@ -201,20 +179,14 @@ fun bestLongJump(jumps: String): Int {
  * При нарушении формата входной строки вернуть -1.
  */
 fun bestHighJump(jumps: String): Int {
-    val q = jumps.split(" ")
-    var w = -1
-    try {
-        q.forEach { p ->
-            when {
-                p != "-" && p != "%" -> when {
-                    w < p.toInt() -> w = p.toInt()
-                }
-            }
-        }
-    } catch (i: NumberFormatException) {
-        return -1
+    val res = jumps.replace(Regex("""\d+( )%+[^+]( )|%"""),
+            "").replace(Regex("""\d+( )[^+]|( )\+$|\d+( )$"""),
+            "").trim().replace(Regex("""\d+( )[^+]|( )\+$|\d+( )$"""),
+            "").trim().split(" + ")
+    res.forEach { i ->
+        if (!i.contains(Regex("""\d"""))) return -1
     }
-    return w
+    return res.map { it.toInt() }.max()!!.toInt()
 }
 
 /**
@@ -227,27 +199,25 @@ fun bestHighJump(jumps: String): Int {
  * Про нарушении формата входной строки бросить исключение IllegalArgumentException
  */
 fun plusMinus(expression: String): Int {
-    val q = expression.split(" ")
-    var w: Int
-    try {
-        when {
-            q[0].first().toString() !in "0".."9" -> throw IllegalArgumentException()
-            else -> {
-                w = q[0].toInt()
-                (1 until q.size - 1 step 2).forEach { i ->
-                    if (q[i + 1].first().toString() !in "0".."9") throw IllegalArgumentException()
+    when {
+        expression.isEmpty() -> throw IllegalArgumentException()
+        expression.contains(Regex("""[^-+\s\d]""")) -> throw IllegalArgumentException()
+        expression.contains(Regex("""\d\+|\+\d|\d-|-\d|\d( )\d""")) -> throw IllegalArgumentException()
+        else -> {
+            val cuttingOnParts = expression.split(" ")
+            var res = cuttingOnParts[0].toInt()
+            when {
+                cuttingOnParts.size == 1 -> return res
+                else -> for (i in 2..cuttingOnParts.size step 2) {
                     when {
-                        q[i] == "+" -> w += q[i + 1].toInt()
-                        q[i] == "-" -> w -= q[i + 1].toInt()
-                        else -> throw IllegalArgumentException()
+                        cuttingOnParts[i - 1] == "+" -> res += cuttingOnParts[i].toInt()
+                        else -> res -= cuttingOnParts[i].toInt()
                     }
                 }
             }
+            return res
         }
-    } catch (i: NumberFormatException) {
-        throw IllegalArgumentException()
     }
-    return w
 }
 
 /**
@@ -269,6 +239,7 @@ fun firstDuplicateIndex(str: String): Int {
     return -1
 }
 
+
 /**
  * Сложная
  *
@@ -281,24 +252,23 @@ fun firstDuplicateIndex(str: String): Int {
  * Все цены должны быть больше либо равны нуля.
  */
 fun mostExpensive(description: String): String {
-    val q = description.split("; ")
-    var w: Double = -0.1
-    var e = ""
-    try {
-        q.forEach { p ->
-            val a = p.split(" ")
-            when {
-                a.size != 2 -> return ""
-                a[1].toDouble() > w -> {
-                    w = a[1].toDouble()
-                    e = a[0]
+    return when {
+        !description.contains(Regex("""\s?.*( )\d+\.?\d?;?\s?""")) -> ""
+        else -> {
+            val cuttingOnParts = description.split(" ", "; ")
+            var maxCost = -1.0
+            var maxCostName = ""
+            (1..cuttingOnParts.size step 2).forEach { i ->
+                when {
+                    cuttingOnParts[i].toDouble() > maxCost -> {
+                        maxCost = cuttingOnParts[i].toDouble()
+                        maxCostName = cuttingOnParts[i - 1]
+                    }
                 }
             }
+            maxCostName
         }
-    } catch (i: NumberFormatException) {
-        return ""
     }
-    return e
 }
 
 /**
@@ -312,7 +282,40 @@ fun mostExpensive(description: String): String {
  *
  * Вернуть -1, если roman не является корректным римским числом
  */
-fun fromRoman(roman: String): Int = TODO()
+fun fromRoman(roman: String): Int {
+    fun funArab(it: Char): Int =
+            when (it) {
+                'M' -> 1000
+                'D' -> 500
+                'C' -> 100
+                'L' -> 50
+                'X' -> 10
+                'V' -> 5
+                else -> 1
+            }
+
+    when {
+        roman == "" || !roman.matches(Regex("""M*(CM)?D*(CD)?C*(XC)?L*(XL)?X*(IX)?V*(IV)*I*""")) -> return -1
+        else -> {
+            val q = listOf("CM" to 900, "CD" to 400, "XC" to 90, "XL" to 40, "IX" to 9, "IV" to 4)
+            var r = roman
+            var res = 0
+            q.forEach {
+                when {
+                    roman.contains(it.first) -> {
+                        r = r.replace(it.first, "")
+                        res += it.second
+                    }
+                }
+            }
+            r.forEach {
+                res += funArab(it)
+            }
+            return res
+        }
+    }
+}
+
 
 /**
  * Очень сложная

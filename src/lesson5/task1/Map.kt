@@ -370,16 +370,16 @@ fun bagPacking(treasures: Map<String, Pair<Int, Int>>, capacity: Int): Set<Strin
             }
         }
     }
-    fun findAns(k: Int, s: Int) {
+    fun funBagPacking(k: Int, s: Int) {
         when {
             a[k][s] == 0 -> return
-            a[k - 1][s] == a[k][s] -> findAns(k - 1, s)
+            a[k - 1][s] == a[k][s] -> funBagPacking(k - 1, s)
             else -> {
-                findAns(k - 1, s - treasures.values.toList()[k - 1].first)
+                funBagPacking(k - 1, s - treasures.values.toList()[k - 1].first)
                 q.add(treasures.keys.toList()[k - 1])
             }
         }
     }
-    findAns(treasures.size, capacity)
+    funBagPacking(treasures.size, capacity)
     return q
 }
