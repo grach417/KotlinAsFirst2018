@@ -387,8 +387,7 @@ fun computeDeviceCells(cells: Int, commands: String, limit: Int): List<Int> {
         secondBrackets.isNotEmpty() -> throw IllegalArgumentException()
         else -> {
             while (++numberOfCommands <= limit && q < commands.length) {
-                val w = q
-                when (commands[w]) {
+                when (commands[q]) {
                     '+' -> {
                         cellsSize[number]++
                         q++
