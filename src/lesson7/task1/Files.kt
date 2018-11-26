@@ -147,8 +147,57 @@ fun centerFile(inputName: String, outputName: String) {
  * 8) Если входной файл удовлетворяет требованиям 1-7, то он должен быть в точности идентичен выходному файлу
  */
 fun alignFileByWidth(inputName: String, outputName: String) {
-    TODO()
+    val fileList = File(inputName).readLines()
+    var w = -1
+    fileList.forEach { string ->
+        when {
+            string.length > w -> w = string.length
+        }
+    }
+    File(outputName).bufferedWriter().use {
+        fileList.forEach { string ->
+            var currentLength = 0
+            val e = mutableListOf<String>()
+            string.split(" ").forEach { word ->
+                when {
+                    word != "" -> {
+                        e.add(word)
+                        currentLength += word.length
+                    }
+                }
+            }
+            when {
+                e.size == 1 -> it.write(e.joinToString(separator = ""))
+                else -> when {
+                    e.isNotEmpty() -> {
+                        do {
+                            var b = true
+                            var i = 0
+                            loop@ for (word in string.split(" ")) {
+                                when {
+                                    word != "" -> {
+                                        when {
+                                            b -> b = false
+                                            else -> when {
+                                                currentLength < w -> e[i] = " " + e[i]
+                                                else -> break@loop
+                                            }
+                                        }
+                                        i++
+                                        currentLength++
+                                    }
+                                }
+                            }
+                        } while (currentLength < w)
+                        it.write(e.joinToString(separator = ""))
+                    }
+                }
+            }
+            it.newLine()
+        }
+    }
 }
+
 
 /**
  * Средняя
