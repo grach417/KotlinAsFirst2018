@@ -93,12 +93,13 @@ fun fib(n: Int): Int {
     var a = 0
     var w = 0
     (1..n).forEach { i ->
-        if (i == 1) {
-            w = 1
-        } else {
-            q = a
-            a = w
-            w += q
+        when (i) {
+            1 -> w = 1
+            else -> {
+                q = a
+                a = w
+                w += q
+            }
         }
     }
     return w
@@ -125,11 +126,13 @@ fun lcm(m: Int, n: Int): Int {
  */
 fun minDivisor(n: Int): Int {
     var q = n
-    if (n.rem(2) == 0) q = 2
-    else for (i in 3..n / 3 step 2) {
-        if (n.rem(i) == 0) {
-            q = i
-            break
+    when {
+        n.rem(2) == 0 -> q = 2
+        else -> for (i in 3..n / 3 step 2) {
+            if (n.rem(i) == 0) {
+                q = i
+                break
+            }
         }
     }
     return q
@@ -286,11 +289,10 @@ fun isPalindrome(n: Int): Boolean = n == revert(n)
  * Использовать операции со строками в этой задаче запрещается.
  */
 fun hasDifferentDigits(n: Int): Boolean{
-    val q = n % 10
     var w = n
     while (w > 0) {
         w /= when {
-            q != w % 10 -> return true
+            n % 10 != w % 10 -> return true
             else -> 10
         }
     }

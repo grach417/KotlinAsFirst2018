@@ -79,11 +79,12 @@ fun timeForHalfWay(t1: Double, v1: Double,
                    t2: Double, v2: Double,
                    t3: Double, v3: Double): Double {
     val s = (t1 * v1 + t2 * v2 + t3 * v3) / 2.0
-    return if (s <= t1 * v1) s / v1
-    else if (s <= t1 * v1 + t2 * v2) t1 + (s - t1 * v1) / v2
-    else t1 + t2 + (s - t1 * v1 - t2 * v2) / v3
+    return when {
+        s <= t1 * v1 -> s / v1
+        s <= t1 * v1 + t2 * v2 -> t1 + (s - t1 * v1) / v2
+        else -> t1 + t2 + (s - t1 * v1 - t2 * v2) / v3
+    }
 }
-
 
 
 /**
@@ -117,9 +118,12 @@ fun whichRookThreatens(kingX: Int, kingY: Int,
 fun rookOrBishopThreatens(kingX: Int, kingY: Int,
                           rookX: Int, rookY: Int,
                           bishopX: Int, bishopY: Int): Int =
-        if (abs(kingX - bishopX) == abs(kingY - bishopY) && (kingX == rookX || kingY == rookY)) 3
-        else if (abs(kingX - bishopX) == abs(kingY - bishopY)) 2 else if (kingX == rookX || kingY == rookY) 1
-        else 0
+        when {
+            abs(kingX - bishopX) == abs(kingY - bishopY) && (kingX == rookX || kingY == rookY) -> 3
+            abs(kingX - bishopX) == abs(kingY - bishopY) -> 2
+            kingX == rookX || kingY == rookY -> 1
+            else -> 0
+        }
 
 /**
  * Простая
@@ -134,14 +138,15 @@ fun triangleKind(a: Double, b: Double, c: Double): Int {
     val overMax = max(max, c)
     val quadMax = sqr(overMax)
     val quadMin = sqr(a) + sqr(b) + sqr(c) - quadMax
-    return if ((a + b + c) > 2 * overMax) {
-        when {
+    return when {
+        (a + b + c) > 2 * overMax -> when {
             quadMin > quadMax -> 0
             quadMin == quadMax -> 1
             quadMin < quadMax -> 2
             else -> -1
         }
-    } else -1
+        else -> -1
+    }
 }
 
 /**

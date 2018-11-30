@@ -125,7 +125,7 @@ fun abs(v: List<Double>): Double = sqrt(v.map { it * it }.sum())
  *
  * Рассчитать среднее арифметическое элементов списка list. Вернуть 0.0, если список пуст
  */
-fun mean(list: List<Double>): Double = if (list.isEmpty()) 0.0 else (list.sum() / list.size)
+fun mean(list: List<Double>): Double = if (list.isEmpty()) 0.0 else list.sum() / list.size
 
 /**
  * Средняя
@@ -261,9 +261,10 @@ fun convertToString(n: Int, base: Int): String = n.toString(base)
  * Например: digits = (1, 3, 12), base = 14 -> 250
  */
 fun decimal(digits: List<Int>, base: Int): Int {
-    val q = digits.reversed()
-    var w = q[0].toDouble()
-    for (i in 1 until q.size) w += q[i] * base.toDouble().pow(i)
+    var w = digits.reversed()[0].toDouble()
+    (1 until digits.reversed().size).forEach { i ->
+        w += digits.reversed()[i] * base.toDouble().pow(i)
+    }
     return w.toInt()
 }
 

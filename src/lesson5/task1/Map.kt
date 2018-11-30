@@ -198,26 +198,27 @@ fun findCheapestStuff(stuff: Map<String, Pair<String, Double>>, kind: String): S
  *        )
  */
 fun propagateHandshakes(friends: Map<String, Set<String>>): Map<String, Set<String>> {
-    fun funHandshakes(friends: Map<String, Set<String>>, set: Set<String>): Set<String> {
-        val q = set.toMutableSet()
-        set.forEach { if (friends.contains(it)) q.addAll(friends[it]!!) }
-        return q
+    val listOfPeople = mutableMapOf<String, MutableSet<String>>()
+    var listWithMaxQuantityHandshakes = mutableMapOf<String, MutableSet<String>>()
+    friends.forEach { (name) ->
+        listOfPeople[name] = friends[name]!!.toMutableSet()
     }
-
-    val res = friends.toMutableMap()
-    friends.forEach { (s, v) ->
-        var variableValue = v
-        var previousValue: MutableSet<String>
-        do {
-            previousValue = variableValue.toMutableSet()
-            variableValue = funHandshakes(friends, variableValue)
-        } while (variableValue != previousValue)
-        res[s] = variableValue - s
-        v.filter { !res.contains(it) }.forEach { friend ->
-            res[friend] = mutableSetOf()
+    while (listOfPeople != listWithMaxQuantityHandshakes) {
+        listWithMaxQuantityHandshakes = listOfPeople
+        listWithMaxQuantityHandshakes.forEach { (name, acquaintances) ->
+            acquaintances.forEach { i ->
+                when (i) {
+                    in listWithMaxQuantityHandshakes -> listOfPeople[name] =
+                            listOfPeople[name]!!.union(listWithMaxQuantityHandshakes[i]!!).toMutableSet()
+                    else -> listOfPeople[i] = mutableSetOf()
+                }
+            }
         }
     }
-    return res
+    listWithMaxQuantityHandshakes.map {
+        if (it.value.contains(it.key)) it.value.remove(it.key)
+    }
+    return listWithMaxQuantityHandshakes
 }
 
 /**
@@ -293,7 +294,7 @@ fun extractRepeats(list: List<String>): Map<String, Int> {
  */
 fun hasAnagrams(words: List<String>): Boolean {
     val q = mutableMapOf<String, List<Char>>()
-    for (i in words) {
+    words.forEach { i ->
         val s = i.toList().sorted()
         when {
             q.containsValue(s) -> return true
@@ -321,13 +322,13 @@ fun hasAnagrams(words: List<String>): Boolean {
  *   findSumOfTwo(listOf(1, 2, 3), 6) -> Pair(-1, -1)
  */
 fun findSumOfTwo(list: List<Int>, number: Int): Pair<Int, Int> {
-    (0 until list.size).forEach { i: Int ->
-        val q = list[i]
-        (i + 1 until list.size).forEach { w: Int ->
-            if (number == q + list[w]) return i to w
+    list.forEach { i ->
+        when {
+            number - i in list && list.indexOf(i) != list.lastIndexOf(number - i)
+            -> return Pair(list.indexOf(i), list.indexOf(number - i))
         }
     }
-    return -1 to -1
+    return Pair(-1, -1)
 }
 
 /**
@@ -350,41 +351,22 @@ fun findSumOfTwo(list: List<Int>, number: Int): Pair<Int, Int> {
  *   ) -> emptySet()
  */
 fun bagPacking(treasures: Map<String, Pair<Int, Int>>, capacity: Int): Set<String> {
-    var maxValue = 0
-    val listWithMaxCost = mutableSetOf<String>()
-    val list = mutableMapOf<Int, Pair<Int, Set<String>>>()
-    val listTwo = mutableMapOf<Int, Pair<Int, Set<String>>>()
-    treasures.forEach { (name, info) ->
-        when {
-            info.second > list[info.first]?.first ?: maxValue -> list[info.first] = Pair(info.second, setOf(name))
-        }
-    }
-    (1..2).forEach { _ ->
-        treasures.forEach { (name, pair) ->
-            list.forEach { (weight, info) ->
-                when (name) {
-                    !in info.second -> when {
-                        list[pair.first + weight] == null ||
-                                list[pair.first + weight]!!.first < info.first + pair.second ->
-                            listTwo[pair.first + weight] = Pair(info.first + pair.second, info.second + name)
-                    }
+    return when {
+        treasures.isEmpty() -> setOf()
+        else -> {
+            val listWithMaxCost = mutableSetOf<String>()
+            var weight = 0
+            treasures.map {
+                it.key to it.value
+            }.sortedBy {
+                it.second.second / it.second.first
+            }.forEach { (nameOfTreasure, weightAndCost) ->
+                while (weight + weightAndCost.first <= capacity) {
+                    listWithMaxCost.add(nameOfTreasure)
+                    weight += weightAndCost.first
                 }
             }
-            list += listTwo
+            listWithMaxCost.toSet()
         }
     }
-    listTwo += list
-    list.clear()
-    list += listTwo.toSortedMap()
-    for ((weight, info) in list) {
-        if (weight > capacity) break
-        when {
-            info.first > maxValue -> {
-                maxValue = info.first
-                listWithMaxCost.clear()
-                listWithMaxCost += info.second
-            }
-        }
-    }
-    return listWithMaxCost
 }

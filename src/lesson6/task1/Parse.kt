@@ -71,25 +71,17 @@ fun main(args: Array<String>) {
  * Обратите внимание: некорректная с точки зрения календаря дата (например, 30.02.2009) считается неверными
  * входными данными.
  */
+
 fun dateStrToDigit(str: String): String {
-    val cuttingOnParts = str.split(" ")
-    when {
-        cuttingOnParts.size != 3 -> return ""
-        else -> {
-            val months = listOf("января", "февраля", "марта", "апреля", "мая", "июня", "июля",
-                    "августа", "сентября", "октября", "ноября", "декабря")
-            return when {
-                months.indexOf(cuttingOnParts[1]) == -1 -> ""
-                else -> {
-                    val monthNumber = months.indexOf(cuttingOnParts[1]) + 1
-                    when {
-                        daysInMonth(monthNumber, cuttingOnParts[2].toInt()) >= cuttingOnParts[0].toInt() ->
-                            String.format("%02d.%02d.%s", cuttingOnParts[0].toInt(), monthNumber, cuttingOnParts[2])
-                        else -> ""
-                    }
-                }
-            }
-        }
+    val cuttingOnParts = str.split(" ").toList()
+    val months = mapOf("января" to 1, "февраля" to 2, "марта" to 3,
+            "апреля" to 4, "мая" to 5, "июня" to 6, "июля" to 7, "августа" to 8,
+            "сентября" to 9, "октября" to 10, "ноября" to 11, "декабря" to 12)
+    return when {
+        cuttingOnParts.size != 3 || months[cuttingOnParts[1]] == null ||
+                daysInMonth(months[cuttingOnParts[1]]!!, cuttingOnParts[2].toInt()) < cuttingOnParts[0].toInt() -> ""
+        else -> String.format("%02d.%02d.%d", cuttingOnParts[0].toInt(),
+                months[cuttingOnParts[1]], cuttingOnParts[2].toInt())
     }
 }
 
@@ -103,28 +95,17 @@ fun dateStrToDigit(str: String): String {
  * Обратите внимание: некорректная с точки зрения календаря дата (например, 30 февраля 2009) считается неверными
  * входными данными.
  */
+
 fun dateDigitToStr(digital: String): String {
-    val cuttingOnParts = digital.split(".")
-    when {
-        cuttingOnParts.size != 3 -> return ""
-        else -> {
-            val months = listOf("января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября",
-                    "октября", "ноября", "декабря")
-            when {
-                (cuttingOnParts[1].toIntOrNull() ?: return "") == 0 || (cuttingOnParts[1].toIntOrNull()
-                        ?: return "") > 12 -> return ""
-                else -> return try {
-                    when {
-                        daysInMonth(cuttingOnParts[1].toInt(), cuttingOnParts[2].toInt()) >= cuttingOnParts[0].toInt() ->
-                            String.format("%d %s %s", cuttingOnParts[0].toInt(),
-                                    months[cuttingOnParts[1].toInt() - 1], cuttingOnParts[2].toInt())
-                        else -> ""
-                    }
-                } catch (i: NumberFormatException) {
-                    ""
-                }
-            }
-        }
+    val cuttingOnParts = digital.split(".").toList()
+    val months = mapOf("01" to "января", "02" to "февраля", "03" to "марта",
+            "04" to "апреля", "05" to "мая", "06" to "июня", "07" to "июля", "08" to "августа",
+            "09" to "сентября", "10" to "октября", "11" to "ноября", "12" to "декабря")
+    return when {
+        cuttingOnParts.size != 3 || months[cuttingOnParts[1]] == null ||
+                daysInMonth(cuttingOnParts[1].toInt(), cuttingOnParts[2].toInt()) < cuttingOnParts[0].toInt() -> ""
+        else -> String.format("%d %s %d", cuttingOnParts[0].toInt(),
+                months[cuttingOnParts[1]], cuttingOnParts[2].toInt())
     }
 }
 
@@ -157,14 +138,9 @@ fun flattenPhoneNumber(phone: String): String =
  * Прочитать строку и вернуть максимальное присутствующее в ней число (717 в примере).
  * При нарушении формата входной строки или при отсутствии в ней чисел, вернуть -1.
  */
-fun bestLongJump(jumps: String): Int {
-    val res = jumps.replace(Regex("""\s+%|\s+-|%|-"""),
-            "").trim().replace(Regex("""\s\s+"""),
-            " ").split(" ")
-    res.forEach { i ->
-        if (!i.contains(Regex("""\d|[-%]"""))) return -1
-    }
-    return res.map { it.toInt() }.max()!!.toInt()
+fun bestLongJump(jumps: String): Int = when {
+    !jumps.matches(Regex("""^(?:[-%]|\d+)(?:\s+(?:\d+|[-%]))*$""")) -> -1
+    else -> jumps.split(" ").filter { it.matches(Regex("""\d+""")) }.map { it.toInt() }.max() ?: -1
 }
 
 /**
@@ -177,16 +153,8 @@ fun bestLongJump(jumps: String): Int {
  * Прочитать строку и вернуть максимальную взятую высоту (230 в примере).
  * При нарушении формата входной строки вернуть -1.
  */
-fun bestHighJump(jumps: String): Int {
-    val res = jumps.replace(Regex("""\d+( )%+[^+]( )|%"""),
-            "").replace(Regex("""\d+( )[^+]|( )\+$|\d+( )$"""),
-            "").trim().replace(Regex("""\d+( )[^+]|( )\+$|\d+( )$"""),
-            "").trim().split(" + ")
-    res.forEach { i ->
-        if (!i.contains(Regex("""\d"""))) return -1
-    }
-    return res.map { it.toInt() }.max()!!.toInt()
-}
+fun bestHighJump(jumps: String): Int = jumps.split(Regex("""(?<=[-%+])\s""")).filter { it.contains("+") }
+        .map { it.split(" ")[0].toInt() }.max() ?: -1
 
 /**
  * Сложная
@@ -197,27 +165,12 @@ fun bestHighJump(jumps: String): Int {
  * Вернуть значение выражения (6 для примера).
  * Про нарушении формата входной строки бросить исключение IllegalArgumentException
  */
-fun plusMinus(expression: String): Int {
-    when {
-        expression.isEmpty() -> throw IllegalArgumentException()
-        expression.contains(Regex("""[^-+\s\d]""")) -> throw IllegalArgumentException()
-        expression.contains(Regex("""\d\+|\+\d|\d-|-\d|\d( )\d""")) -> throw IllegalArgumentException()
-        else -> {
-            val cuttingOnParts = expression.split(" ")
-            var res = cuttingOnParts[0].toInt()
-            when {
-                cuttingOnParts.size == 1 -> return res
-                else -> for (i in 2..cuttingOnParts.size step 2) {
-                    when {
-                        cuttingOnParts[i - 1] == "+" -> res += cuttingOnParts[i].toInt()
-                        else -> res -= cuttingOnParts[i].toInt()
-                    }
-                }
-            }
-            return res
-        }
-    }
+fun plusMinus(expression: String): Int = when {
+    expression.matches(Regex("""^(?:\d+)(?:\s[-+]\s\d+)*$"""))
+    -> expression.split(Regex("""\s+(?=[-+])""")).map { it.replace(" ", "").toInt() }.sum()
+    else -> throw IllegalArgumentException()
 }
+
 
 /**
  * Сложная
@@ -250,25 +203,13 @@ fun firstDuplicateIndex(str: String): Int {
  * или пустую строку при нарушении формата строки.
  * Все цены должны быть больше либо равны нуля.
  */
-fun mostExpensive(description: String): String {
-    return when {
-        !description.contains(Regex("""\s?.*( )\d+\.?\d?;?\s?""")) -> ""
-        else -> {
-            val cuttingOnParts = description.split(" ", "; ")
-            var maxCost = -1.0
-            var maxCostName = ""
-            (1..cuttingOnParts.size step 2).forEach { i ->
-                when {
-                    cuttingOnParts[i].toDouble() > maxCost -> {
-                        maxCost = cuttingOnParts[i].toDouble()
-                        maxCostName = cuttingOnParts[i - 1]
-                    }
-                }
-            }
-            maxCostName
+fun mostExpensive(description: String): String =
+        when {
+            description.matches(Regex("""(?:[А-Я][а-я]*\s\d+.?\d)(?:;\s[А-Я][а-я]*\s\d+.?\d)*"""))
+            -> description.split(Regex("""\s*;\s*""")).maxBy { it.split(" ")[1].toDouble() }
+                    ?.split(" ")?.get(0) ?: ""
+            else -> ""
         }
-    }
-}
 
 /**
  * Сложная
@@ -282,35 +223,22 @@ fun mostExpensive(description: String): String {
  * Вернуть -1, если roman не является корректным римским числом
  */
 fun fromRoman(roman: String): Int {
-    fun funArab(it: Char): Int =
-            when (it) {
-                'M' -> 1000
-                'D' -> 500
-                'C' -> 100
-                'L' -> 50
-                'X' -> 10
-                'V' -> 5
-                else -> 1
-            }
-
-    when {
-        roman == "" || !roman.matches(Regex("""M*(CM)?D*(CD)?C*(XC)?L*(XL)?X*(IX)?V*(IV)*I*""")) -> return -1
+    var res = 0
+    var sum = 0
+    return when {
+        !roman.matches(Regex("""^M{0,3}(?:|CM|DC{0,3}|CD|C{0,3})?(?:XC|LX{0,3}|XL|X{0,3})?(?:IX|VI{0,3}|IV|I{1,3})?$"""))
+                || roman.isEmpty() -> -1
         else -> {
-            val q = listOf("CM" to 900, "CD" to 400, "XC" to 90, "XL" to 40, "IX" to 9, "IV" to 4)
-            var r = roman
-            var res = 0
-            q.forEach {
-                when {
-                    roman.contains(it.first) -> {
-                        r = r.replace(it.first, "")
-                        res += it.second
-                    }
+            (roman.length - 1 downTo 0).forEach { i ->
+                val numbers = mapOf('I' to 1, 'V' to 5, 'X' to 10, 'L' to 50,
+                        'C' to 100, 'D' to 500, 'M' to 1000)[roman[i]] ?: 0
+                res += when {
+                    numbers < sum -> numbers * -1
+                    else -> numbers
                 }
+                sum = numbers
             }
-            r.forEach {
-                res += funArab(it)
-            }
-            return res
+            res
         }
     }
 }
@@ -363,22 +291,15 @@ fun computeDeviceCells(cells: Int, commands: String, limit: Int): List<Int> {
         cellsSize.add(0)
     }
     (0 until commands.length).forEach { i ->
-        val char = commands[i]
-        when {
-            char != '+' && char != '-' && char != '[' && char != ']' && char != '<' && char != '>' && char != ' '
-            -> throw IllegalArgumentException()
-            char == '[' -> secondBrackets.add(i)
-        }
-        when (char) {
-            ']' -> {
-                when {
-                    secondBrackets.isEmpty() -> throw IllegalArgumentException()
-                    else -> {
-                        val indexOfLeftBracket = secondBrackets.last()
-                        furstBrackets += indexOfLeftBracket to i
-                        furstBrackets += i to indexOfLeftBracket
-                        secondBrackets.remove(indexOfLeftBracket)
-                    }
+        when (commands[i]) {
+            !in setOf('+', '-', '[', ']', '<', '>', ' ') -> throw IllegalArgumentException()
+            '[' -> secondBrackets.add(i)
+            ']' -> when {
+                secondBrackets.isEmpty() -> throw IllegalArgumentException()
+                else -> {
+                    furstBrackets += secondBrackets.last() to i
+                    furstBrackets += i to secondBrackets.last()
+                    secondBrackets.remove(secondBrackets.last())
                 }
             }
         }
@@ -403,14 +324,15 @@ fun computeDeviceCells(cells: Int, commands: String, limit: Int): List<Int> {
                     '>' -> when {
                         ++number < cells -> q++
                         else -> throw IllegalStateException()
+
                     }
                     '[' -> when {
-                        cellsSize[number] == 0 -> q = furstBrackets[q]!! + 1
-                        else -> q++
+                        cellsSize[number] != 0 -> q++
+                        else -> q = furstBrackets[q]!! + 1
                     }
                     ']' -> when {
-                        cellsSize[number] != 0 -> q = furstBrackets[q]!! + 1
-                        else -> q++
+                        cellsSize[number] == 0 -> q++
+                        else -> q = furstBrackets[q]!! + 1
                     }
                     else -> q++
                 }
@@ -419,5 +341,9 @@ fun computeDeviceCells(cells: Int, commands: String, limit: Int): List<Int> {
         }
     }
 }
+
+
+
+
 
 
