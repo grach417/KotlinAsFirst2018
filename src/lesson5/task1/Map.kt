@@ -198,25 +198,26 @@ fun findCheapestStuff(stuff: Map<String, Pair<String, Double>>, kind: String): S
  *        )
  */
 fun propagateHandshakes(friends: Map<String, Set<String>>): Map<String, Set<String>> {
-    val listOfPeople = mutableMapOf<String, MutableSet<String>>()
-    var listWithMaxQuantityHandshakes = mutableMapOf<String, MutableSet<String>>()
-    friends.forEach { (name) ->
-        listOfPeople[name] = friends[name]!!.toMutableSet()
-    }
-    while (listOfPeople != listWithMaxQuantityHandshakes) {
-        listWithMaxQuantityHandshakes = listOfPeople
-        listWithMaxQuantityHandshakes.forEach { (name, acquaintances) ->
-            acquaintances.forEach { i ->
-                when (i) {
-                    in listWithMaxQuantityHandshakes -> listOfPeople[name] =
-                            listOfPeople[name]!!.union(listWithMaxQuantityHandshakes[i]!!).toMutableSet()
-                    else -> listOfPeople[i] = mutableSetOf()
-                }
+    val listWithMaxQuantityHandshakes = mutableMapOf<String, MutableSet<String>>()
+    friends.forEach { (name, acquaintances) ->
+        listWithMaxQuantityHandshakes[name] = acquaintances.toMutableSet()
+        acquaintances.forEach { i ->
+            when {
+                !listWithMaxQuantityHandshakes.containsKey(i) -> listWithMaxQuantityHandshakes[i] = mutableSetOf()
             }
         }
     }
-    listWithMaxQuantityHandshakes.map {
-        if (it.value.contains(it.key)) it.value.remove(it.key)
+    listWithMaxQuantityHandshakes.forEach { (name, acquaintances) ->
+        val listOfPeople = mutableSetOf<String>()
+        while (acquaintances != listOfPeople) {
+            (acquaintances - listOfPeople).forEach { i ->
+                when (i) {
+                    in friends -> acquaintances += friends[i]!! - name
+                }
+                listOfPeople += i
+            }
+        }
+        listWithMaxQuantityHandshakes[name] = acquaintances
     }
     return listWithMaxQuantityHandshakes
 }
@@ -351,22 +352,35 @@ fun findSumOfTwo(list: List<Int>, number: Int): Pair<Int, Int> {
  *   ) -> emptySet()
  */
 fun bagPacking(treasures: Map<String, Pair<Int, Int>>, capacity: Int): Set<String> {
-    return when {
-        treasures.isEmpty() -> setOf()
+    val treasuresFilter = treasures.filterValues { it.first <= capacity }
+    when {
+        treasuresFilter.isEmpty() -> return setOf()
         else -> {
-            val listWithMaxCost = mutableSetOf<String>()
-            var weight = 0
-            treasures.map {
-                it.key to it.value
-            }.sortedBy {
-                it.second.second / it.second.first
-            }.forEach { (nameOfTreasure, weightAndCost) ->
-                while (weight + weightAndCost.first <= capacity) {
-                    listWithMaxCost.add(nameOfTreasure)
-                    weight += weightAndCost.first
+            val costOfTreasure = mutableListOf(0)
+            val treasure = mutableListOf(setOf<String>())
+            (1..capacity).forEach { i ->
+                var number = i - 1
+                var maxTreasure = setOf<String>()
+                var maxCostOfTreasure = costOfTreasure[i - 1]
+                for ((nameOfTreasure, weightAndCost) in treasuresFilter) {
+                    if (weightAndCost.first > i) continue
+                    var cost = costOfTreasure[i - weightAndCost.first]
+                    when (nameOfTreasure) {
+                        !in treasure[i - weightAndCost.first] -> cost += weightAndCost.second
+                    }
+                    when {
+                        cost > maxCostOfTreasure -> {
+                            maxTreasure = setOf(nameOfTreasure)
+                            number = i - weightAndCost.first
+                            maxCostOfTreasure = cost
+                        }
+                    }
                 }
+                costOfTreasure += maxCostOfTreasure
+                treasure += treasure[number] + maxTreasure
             }
-            listWithMaxCost.toSet()
+            return treasure.last()
         }
     }
 }
+
