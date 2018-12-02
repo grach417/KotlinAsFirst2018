@@ -138,9 +138,16 @@ fun flattenPhoneNumber(phone: String): String =
  * Прочитать строку и вернуть максимальное присутствующее в ней число (717 в примере).
  * При нарушении формата входной строки или при отсутствии в ней чисел, вернуть -1.
  */
-fun bestLongJump(jumps: String): Int = when {
-    !jumps.matches(Regex("""^(?:[-%]|\d+)(?:\s+(?:\d+|[-%]))*$""")) -> -1
-    else -> jumps.split(" ").filter { it.matches(Regex("""\d+""")) }.map { it.toInt() }.max() ?: -1
+fun bestLongJump(jumps: String): Int {
+    val cuttingOnParts = jumps.replace(Regex("""[-%]"""),
+            "").trim().replace(Regex("""\s+"""),
+            " ").split(" ")
+    cuttingOnParts.forEach { i ->
+        when {
+            !i.contains(Regex("""\d""")) -> return -1
+        }
+    }
+    return cuttingOnParts.map { it.toInt() }.max()!!.toInt()
 }
 
 /**
@@ -203,13 +210,26 @@ fun firstDuplicateIndex(str: String): Int {
  * или пустую строку при нарушении формата строки.
  * Все цены должны быть больше либо равны нуля.
  */
-fun mostExpensive(description: String): String =
-        when {
-            description.matches(Regex("""(?:[А-Я][а-я]*\s\d+.?\d)(?:;\s[А-Я][а-я]*\s\d+.?\d)*"""))
-            -> description.split(Regex("""\s*;\s*""")).maxBy { it.split(" ")[1].toDouble() }
-                    ?.split(" ")?.get(0) ?: ""
-            else -> ""
+fun mostExpensive(description: String): String {
+    when {
+        !Regex("""(?:\S+ \d+(?:\.\d+)?)(?:; \S+ \d+(?:\.\d+)?)*""").matches(description) -> return ""
+        else -> {
+            var theMostExpensiveCost = -1.0
+            var theMostExpensiveProduct = ""
+            description.split(Regex("; ")).map { it.split(' ') }.forEach {
+                when {
+                    it[1].toDouble() > theMostExpensiveCost -> {
+                        theMostExpensiveCost = it[1].toDouble()
+                        theMostExpensiveProduct = it[0]
+                    }
+                }
+            }
+
+            return theMostExpensiveProduct
         }
+    }
+
+}
 
 /**
  * Сложная
