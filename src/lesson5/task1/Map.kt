@@ -323,14 +323,23 @@ fun hasAnagrams(words: List<String>): Boolean {
  *   findSumOfTwo(listOf(1, 2, 3), 6) -> Pair(-1, -1)
  */
 fun findSumOfTwo(list: List<Int>, number: Int): Pair<Int, Int> {
-    list.forEach { i ->
-        when {
-            number - i in list && list.indexOf(i) != list.lastIndexOf(number - i)
-            -> return Pair(list.indexOf(i), list.indexOf(number - i))
+    when {
+        list.isNotEmpty() -> {
+            var q = number
+            (0 until list.size - 1).forEach { furstIndex ->
+                q -= list[furstIndex]
+                (furstIndex + 1 until list.size).forEach { secondIndex ->
+                    when (q) {
+                        list[secondIndex] -> return Pair(furstIndex, secondIndex)
+                    }
+                }
+                q = number
+            }
         }
     }
     return Pair(-1, -1)
 }
+
 
 /**
  * Очень сложная
