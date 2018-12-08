@@ -1,11 +1,9 @@
 @file:Suppress("UNUSED_PARAMETER")
+
 package lesson8.task1
 
 import lesson1.task1.sqr
-import kotlin.math.PI
-import kotlin.math.cos
-import kotlin.math.sin
-import kotlin.math.sqrt
+import kotlin.math.*
 
 /**
  * Точка на плоскости
@@ -33,7 +31,8 @@ class Triangle private constructor(private val points: Set<Point>) {
 
     val c: Point get() = pointList[2]
 
-    constructor(a: Point, b: Point, c: Point): this(linkedSetOf(a, b, c))
+    constructor(a: Point, b: Point, c: Point) : this(linkedSetOf(a, b, c))
+
     /**
      * Пример: полупериметр
      */
@@ -76,14 +75,20 @@ data class Circle(val center: Point, val radius: Double) {
      * расстояние между их центрами минус сумма их радиусов.
      * Расстояние между пересекающимися окружностями считать равным 0.0.
      */
-    fun distance(other: Circle): Double = TODO()
+    fun distance(other: Circle): Double {
+        return when {
+            center.distance(other.center) - (radius + other.radius) <= 0 -> 0.0
+            else -> center.distance(other.center) - (radius + other.radius)
+        }
+    }
+
 
     /**
      * Тривиальная
      *
      * Вернуть true, если и только если окружность содержит данную точку НА себе или ВНУТРИ себя
      */
-    fun contains(p: Point): Boolean = TODO()
+    fun contains(p: Point): Boolean = sqr(radius) > sqr(p.x - center.x) + sqr(p.y - center.y)
 }
 
 /**
@@ -111,7 +116,11 @@ fun diameter(vararg points: Point): Segment = TODO()
  * Построить окружность по её диаметру, заданному двумя точками
  * Центр её должен находиться посередине между точками, а радиус составлять половину расстояния между ними
  */
-fun circleByDiameter(diameter: Segment): Circle = TODO()
+fun circleByDiameter(diameter: Segment): Circle = Circle(Point(Pair((diameter.begin.x +
+        diameter.end.x) / 2, (diameter.begin.y + diameter.end.y) / 2).first,
+        Pair((diameter.begin.x + diameter.end.x) / 2, (diameter.begin.y + diameter.end.y) / 2).second),
+        (diameter.begin.distance(diameter.end)) / 2)
+
 
 /**
  * Прямая, заданная точкой point и углом наклона angle (в радианах) по отношению к оси X.
@@ -124,7 +133,7 @@ class Line private constructor(val b: Double, val angle: Double) {
         require(angle >= 0 && angle < PI) { "Incorrect line angle: $angle" }
     }
 
-    constructor(point: Point, angle: Double): this(point.y * cos(angle) - point.x * sin(angle), angle)
+    constructor(point: Point, angle: Double) : this(point.y * cos(angle) - point.x * sin(angle), angle)
 
     /**
      * Средняя
@@ -164,7 +173,14 @@ fun lineByPoints(a: Point, b: Point): Line = TODO()
  *
  * Построить серединный перпендикуляр по отрезку или по двум точкам
  */
-fun bisectorByPoints(a: Point, b: Point): Line = TODO()
+fun bisectorByPoints(a: Point, b: Point): Line {
+    var q = atan((b.y - a.y) / (b.x - a.x)) + PI / 2
+    when {
+        q < 0 -> q += PI
+        q == PI -> q -= PI
+    }
+    return Line(Point((a.x + b.x) / 2, (a.y + b.y) / 2), q)
+}
 
 /**
  * Средняя
