@@ -2,8 +2,6 @@
 
 package lesson6.task1
 
-import lesson2.task2.daysInMonth
-
 /**
  * Пример
  *
@@ -72,18 +70,7 @@ fun main(args: Array<String>) {
  * входными данными.
  */
 
-fun dateStrToDigit(str: String): String {
-    val cuttingOnParts = str.split(" ").toList()
-    val months = mapOf("января" to 1, "февраля" to 2, "марта" to 3,
-            "апреля" to 4, "мая" to 5, "июня" to 6, "июля" to 7, "августа" to 8,
-            "сентября" to 9, "октября" to 10, "ноября" to 11, "декабря" to 12)
-    return when {
-        cuttingOnParts.size != 3 || months[cuttingOnParts[1]] == null ||
-                daysInMonth(months[cuttingOnParts[1]]!!, cuttingOnParts[2].toInt()) < cuttingOnParts[0].toInt() -> ""
-        else -> String.format("%02d.%02d.%d", cuttingOnParts[0].toInt(),
-                months[cuttingOnParts[1]], cuttingOnParts[2].toInt())
-    }
-}
+fun dateStrToDigit(str: String): String = TODO()
 
 /**
  * Средняя
@@ -96,18 +83,7 @@ fun dateStrToDigit(str: String): String {
  * входными данными.
  */
 
-fun dateDigitToStr(digital: String): String {
-    val cuttingOnParts = digital.split(".").toList()
-    val months = mapOf("01" to "января", "02" to "февраля", "03" to "марта",
-            "04" to "апреля", "05" to "мая", "06" to "июня", "07" to "июля", "08" to "августа",
-            "09" to "сентября", "10" to "октября", "11" to "ноября", "12" to "декабря")
-    return when {
-        cuttingOnParts.size != 3 || months[cuttingOnParts[1]] == null ||
-                daysInMonth(cuttingOnParts[1].toInt(), cuttingOnParts[2].toInt()) < cuttingOnParts[0].toInt() -> ""
-        else -> String.format("%d %s %d", cuttingOnParts[0].toInt(),
-                months[cuttingOnParts[1]], cuttingOnParts[2].toInt())
-    }
-}
+fun dateDigitToStr(digital: String): String = TODO()
 
 /**
  * Средняя
@@ -139,15 +115,11 @@ fun flattenPhoneNumber(phone: String): String =
  * При нарушении формата входной строки или при отсутствии в ней чисел, вернуть -1.
  */
 fun bestLongJump(jumps: String): Int {
-    val cuttingOnParts = jumps.replace(Regex("""[-%]"""),
-            "").trim().replace(Regex("""\s+"""),
-            " ").split(" ")
-    cuttingOnParts.forEach { i ->
-        when {
-            !i.contains(Regex("""\d""")) -> return -1
-        }
+    return when {
+        !jumps.matches(Regex("""[\d\s-%]+""")) -> -1
+        else -> jumps.split(" ").mapNotNull { it.toIntOrNull() }
+                .max() ?: -1
     }
-    return cuttingOnParts.map { it.toInt() }.max()!!.toInt()
 }
 
 /**
@@ -160,8 +132,27 @@ fun bestLongJump(jumps: String): Int {
  * Прочитать строку и вернуть максимальную взятую высоту (230 в примере).
  * При нарушении формата входной строки вернуть -1.
  */
-fun bestHighJump(jumps: String): Int = jumps.split(Regex("""(?<=[-%+])\s""")).filter { it.contains("+") }
-        .map { it.split(" ")[0].toInt() }.max() ?: -1
+fun bestHighJump(jumps: String): Int {
+    return when {
+        !jumps.matches(Regex("""[\d\s-%+]+""")) -> -1
+        else -> {
+            var maxHeight = -1
+            val cuttingOnParts = Regex("""\s+""").replace(Regex("""[\\%-]""")
+                    .replace(jumps, ""), " ").split(" ")
+            (0 until cuttingOnParts.size)
+                    .forEach { i ->
+                        when {
+                            cuttingOnParts[i] == "+" && cuttingOnParts[i - 1].toInt() >
+                                    maxHeight -> maxHeight = cuttingOnParts[i - 1].toInt()
+                        }
+                    }
+
+            maxHeight
+        }
+    }
+
+}
+
 
 /**
  * Сложная
@@ -251,7 +242,7 @@ fun fromRoman(roman: String): Int {
         else -> {
             (roman.length - 1 downTo 0).forEach { i ->
                 val numbers = mapOf('I' to 1, 'V' to 5, 'X' to 10, 'L' to 50,
-                        'C' to 100, 'D' to 500, 'M' to 1000)[roman[i]] ?: 0
+                        'C' to 100, 'D' to 500, 'M' to 1000)[roman[i]]!!
                 res += when {
                     numbers < sum -> numbers * -1
                     else -> numbers

@@ -325,21 +325,21 @@ fun hasAnagrams(words: List<String>): Boolean {
 fun findSumOfTwo(list: List<Int>, number: Int): Pair<Int, Int> {
     when {
         list.isNotEmpty() -> {
-            var q = number
-            (0 until list.size - 1).forEach { furstIndex ->
-                q -= list[furstIndex]
-                (furstIndex + 1 until list.size).forEach { secondIndex ->
-                    when (q) {
-                        list[secondIndex] -> return Pair(furstIndex, secondIndex)
-                    }
+            var furstValue = 0
+            var secondValue = list.size - 1
+            val mapIndexed = list.mapIndexed { i, value -> value to i }.sortedBy { it.first }
+            while (furstValue != secondValue) {
+                when {
+                    mapIndexed[furstValue].first + mapIndexed[secondValue].first == number ->
+                        return Pair(mapIndexed[furstValue].second, mapIndexed[secondValue].second)
+                    mapIndexed[furstValue].first + mapIndexed[secondValue].first < number -> furstValue++
+                    else -> secondValue--
                 }
-                q = number
             }
         }
     }
     return Pair(-1, -1)
 }
-
 
 /**
  * Очень сложная
