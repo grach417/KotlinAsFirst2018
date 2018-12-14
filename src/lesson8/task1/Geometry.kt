@@ -88,7 +88,7 @@ data class Circle(val center: Point, val radius: Double) {
      *
      * Вернуть true, если и только если окружность содержит данную точку НА себе или ВНУТРИ себя
      */
-    fun contains(p: Point): Boolean = sqr(radius) > sqr(p.x - center.x) + sqr(p.y - center.y)
+    fun contains(p: Point): Boolean = center.distance(p) <= radius
 }
 
 /**
@@ -116,9 +116,16 @@ fun diameter(vararg points: Point): Segment = TODO()
  * Построить окружность по её диаметру, заданному двумя точками
  * Центр её должен находиться посередине между точками, а радиус составлять половину расстояния между ними
  */
-fun circleByDiameter(diameter: Segment): Circle = Circle(Point(Pair((diameter.begin.x +
-        diameter.end.x) / 2, (diameter.begin.y + diameter.end.y) / 2).first,
-        Pair((diameter.begin.x + diameter.end.x) / 2, (diameter.begin.y + diameter.end.y) / 2).second),
+fun circleByDiameter(diameter: Segment): Circle = Circle(Point(Pair(
+        (diameter.begin.x +
+                diameter.end.x) / 2,
+        (diameter.begin.y +
+                diameter.end.y) / 2)
+        .first,
+        Pair((
+                diameter.begin.x + diameter.end.x) / 2,
+                (diameter.begin.y + diameter.end.y) / 2)
+                .second),
         (diameter.begin.distance(diameter.end)) / 2)
 
 
@@ -174,12 +181,17 @@ fun lineByPoints(a: Point, b: Point): Line = TODO()
  * Построить серединный перпендикуляр по отрезку или по двум точкам
  */
 fun bisectorByPoints(a: Point, b: Point): Line {
-    var q = atan((b.y - a.y) / (b.x - a.x)) + PI / 2
+    var q = atan(
+            (b.y - a.y) / (b.x - a.x))
+    +PI / 2
     when {
         q < 0 -> q += PI
         q == PI -> q -= PI
     }
-    return Line(Point((a.x + b.x) / 2, (a.y + b.y) / 2), q)
+    return Line(Point(
+            (a.x + b.x) / 2,
+            (a.y + b.y) / 2),
+            q)
 }
 
 /**
