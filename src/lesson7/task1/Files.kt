@@ -1,4 +1,4 @@
-@file:Suppress("UNUSED_PARAMETER", "ConvertCallChainIntoSequence")
+@file:Suppress("UNUSED_PARAMETER", "ConvertCallChainIntoSequence", "LABEL_NAME_CLASH")
 
 package lesson7.task1
 
@@ -147,55 +147,62 @@ fun centerFile(inputName: String, outputName: String) {
  * 8) Если входной файл удовлетворяет требованиям 1-7, то он должен быть в точности идентичен выходному файлу
  */
 fun alignFileByWidth(inputName: String, outputName: String) {
-    val fileList = File(inputName).readLines()
-    var w = -1
-    fileList.forEach { string ->
+
+
+    val length = File(inputName)
+            .readText()
+            .split("\n")
+            .map { it.trim().length }
+            .max()!!
+    val outputFile = File(outputName)
+            .bufferedWriter()
+
+
+    File(inputName).readLines().map {
+        it.trim()
+    }.forEach { line ->
+
+        val wordsOfLine = line.split(Regex(
+                "\\s+"))
+                .size
         when {
-            string.length > w -> w = string.length
-        }
-    }
-    File(outputName).bufferedWriter().use {
-        fileList.forEach { string ->
-            var currentLength = 0
-            val e = mutableListOf<String>()
-            string.split(" ").forEach { word ->
-                when {
-                    word != "" -> {
-                        e.add(word)
-                        currentLength += word.length
+
+            line.replace(Regex(
+                    """\s+"""),
+                    " ")
+                    .length == length ||
+                    wordsOfLine == 0 ->
+                outputFile.write(line)
+
+            else -> {
+
+                val split = line.split(Regex(
+                        """\s+"""))
+
+                val spaces = length -
+                        line.replace(Regex(
+                                """\s+"""),
+                                "")
+                                .length
+
+                (0 until split.size).forEach { i ->
+                    outputFile.write(split[i])
+
+                    when {
+                        i == wordsOfLine - 1 ->
+                            return@forEach
+                        spaces % (wordsOfLine - 1) > i ->
+                            outputFile.write(" ")
                     }
+
+                    outputFile.write(" "
+                            .repeat(spaces / (wordsOfLine - 1)))
                 }
             }
-            when {
-                e.size == 1 -> it.write(e.joinToString(separator = ""))
-                else -> when {
-                    e.isNotEmpty() -> {
-                        do {
-                            var b = true
-                            var i = 0
-                            loop@ for (word in string.split(" ")) {
-                                when {
-                                    word != "" -> {
-                                        when {
-                                            b -> b = false
-                                            else -> when {
-                                                currentLength < w -> e[i] = " " + e[i]
-                                                else -> break@loop
-                                            }
-                                        }
-                                        i++
-                                        currentLength++
-                                    }
-                                }
-                            }
-                        } while (currentLength < w)
-                        it.write(e.joinToString(separator = ""))
-                    }
-                }
-            }
-            it.newLine()
         }
+        outputFile.newLine()
     }
+    outputFile.close()
 }
 
 
@@ -218,13 +225,13 @@ fun alignFileByWidth(inputName: String, outputName: String) {
  *
  */
 fun top20Words(inputName: String): Map<String, Int> {
-    val fileList = File(inputName).readText().trim { it
+    val file = File(inputName).readText().trim { it
         ->
         Regex("""([^а-яА-ЯёЁa-zA-Z])+""").matches("$it")
     }
     return when {
-        fileList.isEmpty() -> mapOf()
-        else -> fileList.split(Regex("""([^а-яА-ЯёЁa-zA-Z])+""")).groupingBy { it.toLowerCase() }
+        file.isEmpty() -> mapOf()
+        else -> file.split(Regex("""([^а-яА-ЯёЁa-zA-Z])+""")).groupingBy { it.toLowerCase() }
                 .eachCount().toList().sortedByDescending { it.second }.take(20).toMap()
     }
 
@@ -266,25 +273,7 @@ fun top20Words(inputName: String): Map<String, Int> {
  * Обратите внимание: данная функция не имеет возвращаемого значения
  */
 fun transliterate(inputName: String, dictionary: Map<Char, String>, outputName: String) {
-    val fileList = File(inputName).reader()
-    val list = mutableMapOf<Char, String>()
-    dictionary.keys.forEach { it ->
-        list[it.toLowerCase()] = (list[it.toLowerCase()] ?: "") + dictionary[it]!!.toLowerCase()
-        when {
-            it.toLowerCase() != it.toUpperCase() -> list[it.toUpperCase()] =
-                    (list[it.toUpperCase()] ?: "") + dictionary[it]!!.toLowerCase().capitalize()
-        }
-    }
-    val fileListTwo = File(outputName).bufferedWriter()
-    var q = fileList.read()
-    while (q != -1) {
-        when {
-            list.keys.contains(q.toChar()) -> fileListTwo.write(list[q.toChar()])
-            else -> fileListTwo.write(q.toChar().toString())
-        }
-        q = fileList.read()
-    }
-    fileListTwo.close()
+    TODO()
 }
 
 /**
@@ -312,34 +301,7 @@ fun transliterate(inputName: String, dictionary: Map<Char, String>, outputName: 
  * Обратите внимание: данная функция не имеет возвращаемого значения
  */
 fun chooseLongestChaoticWord(inputName: String, outputName: String) {
-    val q = mutableMapOf<Int, List<String>>()
-    var w = 0
-    try {
-        File(inputName).readLines().forEach { line ->
-            when {
-                line.isEmpty() -> return@forEach
-                else -> {
-                    val m = mutableListOf<String>()
-                    Regex("""[а-яёa-z]""").findAll(line.toLowerCase()).forEach { el ->
-                        m += el.value
-                    }
-                    val uniqueLetters = m.toSet().toList()
-                    when {
-                        m.size == uniqueLetters.size -> {
-                            q[uniqueLetters.size] = (q[uniqueLetters.size] ?: emptyList()) + (line.trim())
-                            if (uniqueLetters.size > w) w = uniqueLetters.size
-                        }
-                    }
-                }
-            }
-        }
-        File(outputName).bufferedWriter().apply {
-            write(q[w]!!.joinToString())
-            close()
-        }
-    } catch (e: NullPointerException) {
-        File(outputName).writeText("")
-    }
+    TODO()
 }
 
 /**
