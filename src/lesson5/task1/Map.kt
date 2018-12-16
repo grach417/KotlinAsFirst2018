@@ -327,12 +327,27 @@ fun findSumOfTwo(list: List<Int>, number: Int): Pair<Int, Int> {
         list.isNotEmpty() -> {
             var furstValue = 0
             var secondValue = list.size - 1
-            val mapIndexed = list.mapIndexed { i, value -> value to i }.sortedBy { it.first }
+            val mapIndexed = list.mapIndexed { i, value
+                ->
+                value to i
+            }
+                    .sortedBy { it.first }
             while (furstValue != secondValue) {
                 when {
-                    mapIndexed[furstValue].first + mapIndexed[secondValue].first == number ->
-                        return Pair(mapIndexed[furstValue].second, mapIndexed[secondValue].second)
-                    mapIndexed[furstValue].first + mapIndexed[secondValue].first < number -> furstValue++
+                    mapIndexed[furstValue]
+                            .first
+                            + mapIndexed[secondValue]
+                            .first
+                            == number ->
+                        return Pair(mapIndexed[furstValue]
+                                .second,
+                                mapIndexed[secondValue]
+                                        .second)
+                    mapIndexed[furstValue]
+                            .first
+                            + mapIndexed[secondValue]
+                            .first
+                            < number -> furstValue++
                     else -> secondValue--
                 }
             }
