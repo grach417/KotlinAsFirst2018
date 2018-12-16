@@ -331,7 +331,7 @@ fun findSumOfTwo(list: List<Int>, number: Int): Pair<Int, Int> {
                 ->
                 value to i
             }
-                    .sortedBy { it.first }
+
             while (furstValue != secondValue) {
                 when {
                     mapIndexed[furstValue]
